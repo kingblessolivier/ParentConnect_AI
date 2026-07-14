@@ -32,6 +32,10 @@ ParentConnect AI equips parents and caregivers to become the first and most trus
 - **`[ASSUMPTION]`** marks a design decision taken on a stated assumption pending stakeholder confirmation (tracked in [`docs/decisions-log.md`](./docs/decisions-log.md)).
 - Diagrams are [Mermaid](https://mermaid.js.org/) so they live in version control and render on GitHub.
 
+## Changelog
+
+Notable changes and architectural decisions are recorded in [`CHANGELOG.md`](./CHANGELOG.md).
+
 ## Contributing & git workflow
 
 See [`CONTRIBUTING.md`](./CONTRIBUTING.md). In short: feature branch → **pull request into `dev`** → `dev` is the integration branch → `main` is deployment-only, promoted from `dev` by its own PR. Nothing is pushed directly to `dev` or `main`.
