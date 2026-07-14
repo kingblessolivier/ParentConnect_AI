@@ -1,0 +1,419 @@
+openapi: 3.1.0
+info:
+  title: ParentConnect AI API
+  version: 0.1.0
+  description: >
+    REST API for ParentConnect AI. Companion to docs/architecture/api-spec.md.
+    Data-minimisation is enforced at the schema level: no adolescent name,
+    date of birth, or national ID fields exist anywhere in this contract
+    (FR-24, NFR-15). This is a design baseline; endpoints are illustrative.
+  license:
+    name: TBD
+servers:
+  - url: https://api.parentconnect.example/api/v1
+    description: Placeholder; in-region host per NFR-18 (ADR-0009)
+security:
+  - bearerAuth: []
+tags:
+  - name: auth
+  - name: profile
+  - name: consent
+  - name: coach
+  - name: content
+  - name: cms
+  - name: safeguarding
+  - name: sessions
+  - name: me-analytics
+  - name: admin
+paths:
+  /auth/otp/request:
+    post:
+      tags: [auth]
+      summary: Request an SMS OTP (FR-01)
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [phone]
+              properties:
+                phone: { type: string, description: E.164 phone number }
+      responses:
+        '202': { description: OTP dispatched (rate-limited) }
+        '429': { $ref: '#/components/responses/RateLimited' }
+  /auth/otp/verify:
+    post:
+      tags: [auth]
+      summary: Verify OTP and issue tokens
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [phone, otp]
+              properties:
+                phone: { type: string }
+                otp: { type: string }
+      responses:
+        '200':
+          description: Tokens issued
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TokenPair' }
+        '401': { $ref: '#/components/responses/Problem' }
+  /me:
+    get:
+      tags: [profile]
+      summary: Get current profile
+      responses:
+        '200':
+          description: Profile
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ParentProfile' }
+    patch:
+      tags: [profile]
+      summary: Update profile (FR-06)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ParentProfileUpdate' }
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ParentProfile' }
+    delete:
+      tags: [profile]
+      summary: Delete account and history (NFR-17)
+      responses:
+        '204': { description: Deleted }
+  /me/export:
+    get:
+      tags: [profile]
+      summary: Export my data (NFR-17)
+      responses:
+        '200': { description: Export bundle }
+  /parents:
+    post:
+      tags: [profile]
+      summary: Assisted onboarding (FR-03)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AssistedOnboarding' }
+      responses:
+        '201':
+          description: Parent created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ParentProfile' }
+  /consent:
+    post:
+      tags: [consent]
+      summary: Record informed consent (NFR-16)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Consent' }
+      responses:
+        '201': { description: Consent recorded }
+  /conversations:
+    post:
+      tags: [coach]
+      summary: Start a conversation
+      responses:
+        '201':
+          description: Conversation
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Conversation' }
+  /conversations/{id}/messages:
+    post:
+      tags: [coach]
+      summary: Send a message; get a grounded answer (FR-07/09/11/13)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [body]
+              properties:
+                client_id: { type: string, format: uuid, description: idempotency for offline authoring }
+                body: { type: string }
+                language: { $ref: '#/components/schemas/Language' }
+      responses:
+        '200':
+          description: Grounded answer
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CoachResponse' }
+        '503':
+          description: AI degraded — fallback payload with referral/content (NFR-06)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CoachResponse' }
+  /content:
+    get:
+      tags: [content]
+      summary: List published modules (FR-16)
+      parameters:
+        - { name: topic, in: query, schema: { type: string } }
+        - { name: age_band, in: query, schema: { $ref: '#/components/schemas/AgeBand' } }
+        - { name: language, in: query, schema: { $ref: '#/components/schemas/Language' } }
+      responses:
+        '200':
+          description: Modules
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/ContentItem' }
+  /referral-directory:
+    get:
+      tags: [safeguarding]
+      summary: Referral numbers for a district (FR-21) — available when AI is down
+      parameters:
+        - { name: district, in: query, schema: { type: string } }
+      responses:
+        '200':
+          description: Directory
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/ReferralContact' }
+  /referrals:
+    post:
+      tags: [safeguarding]
+      summary: Raise a confidential referral (FR-22) — no child identity (FR-24)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ReferralCreate' }
+      responses:
+        '201':
+          description: Referral raised
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Referral' }
+    get:
+      tags: [safeguarding]
+      summary: List referrals assigned to me (CPO)
+      responses:
+        '200':
+          description: Referrals
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Referral' }
+  /referrals/{id}/transition:
+    post:
+      tags: [safeguarding]
+      summary: Transition referral status (FR-23)
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [to_status]
+              properties:
+                to_status: { $ref: '#/components/schemas/ReferralStatus' }
+                note: { type: string, description: minimal; no child identity }
+      responses:
+        '200': { description: Transitioned }
+  /sessions/{id}/attendance:
+    post:
+      tags: [sessions]
+      summary: Record attendance (offline-idempotent) (FR-27/28)
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [client_id, parent_id]
+              properties:
+                client_id: { type: string, format: uuid }
+                parent_id: { type: string, format: uuid }
+      responses:
+        '201': { description: Recorded }
+  /sync:
+    post:
+      tags: [sessions]
+      summary: Batch offline push/pull (offline-sync.md)
+      responses:
+        '200': { description: Reconciled change set }
+  /export/indicators.csv:
+    get:
+      tags: [me-analytics]
+      summary: Aggregated, anonymised CSV export (FR-32)
+      responses:
+        '200':
+          description: CSV
+          content:
+            text/csv: {}
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  responses:
+    Problem:
+      description: RFC 9457 problem
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    RateLimited:
+      description: Too many requests
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+  schemas:
+    Language:
+      type: string
+      enum: [rw, en, fr]
+      description: rw=Kinyarwanda (default), en, fr (fr deferred, NFR-30)
+    AgeBand:
+      type: string
+      enum: ['10_12', '13_15', '16_19']
+      description: The ONLY representation of a child's age. No name/DOB/ID (FR-24).
+    ReferralStatus:
+      type: string
+      enum: [raised, acknowledged, actioned, closed]
+    TokenPair:
+      type: object
+      properties:
+        access_token: { type: string }
+        refresh_token: { type: string }
+        expires_in: { type: integer }
+    ParentProfile:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        display_alias: { type: [string, 'null'], description: optional; real name never required (FR-04) }
+        district: { type: string }
+        sector: { type: string }
+        urban_rural: { type: string, enum: [urban, rural] }
+        caregiver_gender: { type: [string, 'null'], enum: [female, male, other, null] }
+        preferred_language: { $ref: '#/components/schemas/Language' }
+        preferred_channel: { type: string, enum: [app, sms, ussd, ivr] }
+        child_bands:
+          type: array
+          items: { $ref: '#/components/schemas/AgeBand' }
+    ParentProfileUpdate:
+      type: object
+      properties:
+        district: { type: string }
+        sector: { type: string }
+        preferred_language: { $ref: '#/components/schemas/Language' }
+        preferred_channel: { type: string, enum: [app, sms, ussd, ivr] }
+        child_bands:
+          type: array
+          items: { $ref: '#/components/schemas/AgeBand' }
+    AssistedOnboarding:
+      type: object
+      required: [phone, preferred_language, consent]
+      properties:
+        phone: { type: string }
+        district: { type: string }
+        sector: { type: string }
+        preferred_language: { $ref: '#/components/schemas/Language' }
+        preferred_channel: { type: string, enum: [app, sms, ussd, ivr] }
+        child_bands:
+          type: array
+          items: { $ref: '#/components/schemas/AgeBand' }
+        consent: { $ref: '#/components/schemas/Consent' }
+    Consent:
+      type: object
+      required: [purpose, language, method]
+      properties:
+        purpose: { type: string }
+        language: { $ref: '#/components/schemas/Language' }
+        method: { type: string, enum: [app, sms, ivr, assisted] }
+    Conversation:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        channel: { type: string, enum: [app, sms, ussd, ivr] }
+    CoachResponse:
+      type: object
+      properties:
+        answer: { type: string }
+        is_ai: { type: boolean, description: always true; AI disclosed (D4) }
+        safety_flag: { type: string, enum: [none, crisis, out_of_scope, refused] }
+        conversation_starters:
+          type: array
+          items: { type: string }
+        citations:
+          type: array
+          items: { $ref: '#/components/schemas/Citation' }
+        referral:
+          oneOf:
+            - { type: 'null' }
+            - type: array
+              items: { $ref: '#/components/schemas/ReferralContact' }
+    Citation:
+      type: object
+      description: Every health answer cites an approved source (FR-15, NFR-22)
+      properties:
+        content_version_id: { type: string, format: uuid }
+        title: { type: string }
+    ContentItem:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        topic: { type: string }
+        age_band: { $ref: '#/components/schemas/AgeBand' }
+        language: { $ref: '#/components/schemas/Language' }
+        audio_uri: { type: [string, 'null'], description: audio for low-literacy (FR-19) }
+    ReferralContact:
+      type: object
+      properties:
+        name: { type: string, example: Isange One Stop Centre }
+        phone: { type: string }
+        type: { type: string, enum: [one_stop_centre, child_helpline, health_facility] }
+    ReferralCreate:
+      type: object
+      required: [category]
+      description: Subject is the adult raiser; no child identity fields (FR-24)
+      properties:
+        category: { type: string, enum: [abuse, exploitation, self_harm, pregnancy, other] }
+        note: { type: string, description: minimal; no child identity }
+    Referral:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        category: { type: string }
+        status: { $ref: '#/components/schemas/ReferralStatus' }
+        due_by: { type: string, format: date-time }
+    Problem:
+      type: object
+      properties:
+        type: { type: string }
+        title: { type: string }
+        status: { type: integer }
+        detail: { type: string }
+        instance: { type: string }
