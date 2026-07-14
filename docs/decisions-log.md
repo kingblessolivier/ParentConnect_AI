@@ -22,6 +22,15 @@ A running log of open questions, assumptions taken, and how they were resolved. 
 | Q10 | Adolescent direct access in MVP | ASSUMED | **No** direct minor accounts in MVP (parents/caregivers only) — materially lighter DPIA. | Sponsor / DPO |
 | Q11 | French scope | ASSUMED | French **deferred** post-pilot; localisation layer built to accept it (NFR-30). Pilot = Kinyarwanda + English. | Programme |
 
+## Technology stack decisions (sponsor)
+
+| # | Decision | Status | Resolution | ADR |
+|---|---|---|---|---|
+| Q-tech-1 | Backend framework | RESOLVED | **Node.js + TypeScript** (supersedes Python/FastAPI). AI/RAG service **stays Python** as a separate service. | ADR-0014 (supersedes 0001) |
+| Q-tech-2 | Mobile framework | RESOLVED | **Flutter**. ⚠️ NFR-28 (<25 MB APK) is tight for Flutter — validate release-build size early; revise NFR-28 or revisit if unreachable. | ADR-0015 (supersedes 0013) |
+| Q-tech-3 | Web frontend (staff consoles) | RESOLVED | **Next.js + React + TypeScript**. | ADR-0016 |
+| Q-tech-4 | AI/RAG service language | RESOLVED | **Python**, kept as a separate service behind an internal API (best RAG/embedding/eval tooling; the Kinyarwanda-retrieval risk makes this the safer call). | ADR-0014 |
+
 ## Facts to verify (primary source needed)
 
 | # | Claim | Where used |
@@ -39,3 +48,4 @@ A running log of open questions, assumptions taken, and how they were resolved. 
 | Date | Change |
 |---|---|
 | 2026-07-14 | Initial documentation baseline created; kickoff blocking questions logged; proceeding on stated assumptions per sponsor instruction. |
+| 2026-07-14 | Tech stack changed by sponsor: Node.js backend, Flutter mobile, Next.js/React web; AI/RAG service stays Python. ADR-0001 & 0013 superseded by ADR-0014/0015/0016. Flutter APK-size risk (NFR-28) flagged. |

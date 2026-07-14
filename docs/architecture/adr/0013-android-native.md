@@ -1,9 +1,11 @@
 # ADR-0013 — Native Android (Kotlin)
 
-- **Status:** Accepted
+- **Status:** Superseded by [ADR-0015](./0015-flutter-mobile.md)
 - **Date:** 2026-07-14
 - **Deciders:** Architect, Mobile lead
 - **Related:** NFR-27 (Android 8, 1 GB RAM), NFR-28 (<25 MB, <2 MB/session), NFR-07 (offline), NFR-25 (usability)
+
+> **Superseded 2026-07-14 by ADR-0015.** The sponsor chose Flutter for mobile. The context below is retained for history. Do not edit — see ADR-0015 for the current decision, including the APK-size/low-end-device risks this ADR originally raised against cross-platform frameworks.
 
 ## Context
 

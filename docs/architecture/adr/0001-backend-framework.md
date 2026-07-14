@@ -1,9 +1,11 @@
 # ADR-0001 — Backend framework: Python + FastAPI
 
-- **Status:** Accepted
+- **Status:** Superseded by [ADR-0014](./0014-backend-nodejs.md)
 - **Date:** 2026-07-14
 - **Deciders:** Lead architect
 - **Related:** NFR-33 (maintainability), NFR-01 (latency), small-team constraint
+
+> **Superseded 2026-07-14 by ADR-0014.** The sponsor chose a Node.js backend; the AI/RAG service remains Python as a separate service. The context below is retained for history. Do not edit — see ADR-0014 for the current decision.
 
 ## Context
 
