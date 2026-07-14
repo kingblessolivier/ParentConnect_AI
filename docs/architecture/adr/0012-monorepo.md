@@ -14,12 +14,15 @@ The project spans backend, AI service, Android app, and docs. A small team benef
 Use a **monorepo** with clear top-level boundaries:
 
 ```
-/backend      Python/FastAPI modular monolith
-/ai           RAG pipeline & evaluation tooling
-/android      Kotlin app
+/backend      Node.js + TypeScript modular monolith (ADR-0014)
+/ai           Python RAG pipeline & evaluation tooling (separate service, ADR-0014)
+/web          Next.js + React + TypeScript staff consoles (ADR-0016)
+/mobile       Flutter app (ADR-0015)
 /docs         this documentation
 /infra        IaC, CI/CD, config bundles
 ```
+
+> Layout updated 2026-07-14 for the Node/Flutter/Next.js stack (ADR-0014/0015/0016). The monorepo decision itself is unchanged.
 
 One CI pipeline with path-based jobs (only affected areas build/test). `dev`/`main` branch model applies repo-wide.
 

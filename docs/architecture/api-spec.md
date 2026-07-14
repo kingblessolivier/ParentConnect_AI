@@ -1,6 +1,6 @@
 # API Specification
 
-REST API design, resource by resource. The machine-readable contract is [`openapi.yaml`](./openapi.yaml) (OpenAPI 3.1); this document is the human rationale. FastAPI generates the served spec from code — `openapi.yaml` is the reviewed source of truth for the design.
+REST API design, resource by resource. The machine-readable contract is [`openapi.yaml`](./openapi.yaml) (OpenAPI 3.1); this document is the human rationale. `openapi.yaml` is the reviewed **source of truth**: the Node.js backend validates against it, and TypeScript (backend/web) and Dart (Flutter) client types are generated from it (ADR-0014/0015/0016).
 
 ## Conventions
 

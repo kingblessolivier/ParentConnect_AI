@@ -44,7 +44,8 @@ C4Context
 ```mermaid
 flowchart TB
     subgraph Client
-      APP[Android App<br/>Kotlin · offline-first store]
+      APP[Mobile App<br/>Flutter · offline-first store]
+      WEBC[Web console<br/>Next.js/React · staff only]
       BASIC[Basic phones<br/>SMS · USSD · IVR]
     end
 
@@ -53,7 +54,7 @@ flowchart TB
       APIGW[API Gateway / BFF<br/>REST · authn · rate-limit]
     end
 
-    subgraph Core["Core Backend (modular monolith)"]
+    subgraph Core["Core Backend — Node.js/TS (modular monolith)"]
       IDN[identity & consent]
       COACH[coach orchestrator]
       CONTENT[content & nudges]
@@ -63,7 +64,7 @@ flowchart TB
       ADMIN[admin & CMS]
     end
 
-    subgraph AI["AI Service (separable)"]
+    subgraph AI["AI Service — Python (separable)"]
       RAG[RAG pipeline<br/>retrieve→rerank→assemble→generate→safety]
       EMB[Embedding + rerank models]
     end
@@ -79,9 +80,10 @@ flowchart TB
     TEL[[Telecom / Aggregator]]
 
     APP --> APIGW
+    WEBC --> APIGW
     BASIC --> TEL --> GW --> APIGW
     APIGW --> IDN & COACH & CONTENT & SAFE & SESS & ME & ADMIN
-    COACH --> RAG
+    COACH -->|internal HTTP/JSON| RAG
     RAG --> EMB
     RAG --> PG
     RAG --> LLM
@@ -94,7 +96,7 @@ flowchart TB
 
 **Why a modular monolith, not microservices (ADR-0011):** a small team ships and operates a well-structured monolith far more cheaply than a fleet of services. Modules have clear boundaries so a hot path (the AI service) can be **split out** when scale demands — and it already is logically separate, because it must fail independently (NFR-06).
 
-**Why the AI service is separable:** graceful degradation (NFR-06) requires that content, SMS, and referral survive an AI outage. The coach orchestrator calls the AI service over an internal API with a strict timeout and a fallback path (cached FAQ + "I'll answer when I can").
+**Why the AI service is separable:** graceful degradation (NFR-06) requires that content, SMS, and referral survive an AI outage. The **Node.js** coach orchestrator calls the **Python** AI service over an internal HTTP/JSON API with a strict timeout and a fallback path (cached FAQ + "I'll answer when I can"). This service boundary is also the language boundary (ADR-0014): product code is TypeScript, the RAG/eval stack is Python.
 
 ---
 
@@ -135,7 +137,8 @@ flowchart LR
 
 | Concern | Choice | Why (constraint) | ADR | Rejected |
 |---|---|---|---|---|
-| Backend framework | **Python + FastAPI** | Same language as the AI/RAG stack (one skill set for a small team); async I/O for channel fan-out; boring & well-supported | ADR-0001 | Node/NestJS, Django, Go |
+| Backend framework | **Node.js + TypeScript** | JS/TS ecosystem across backend + web + shared API contract; async I/O for channel fan-out | ADR-0014 (supersedes 0001) | Python/FastAPI, all-Node incl. AI |
+| Web frontend (staff) | **Next.js + React + TypeScript** | Shares TS + OpenAPI types with backend; SSR; mature admin-dashboard patterns | ADR-0016 | React+Vite, Vue/Nuxt |
 | Database | **PostgreSQL** | One durable, boring datastore for relational + JSON + vectors; managed offerings everywhere | ADR-0002 | MySQL, MongoDB |
 | Vector store | **pgvector in Postgres** | Avoids a second datastore for a small team; pilot corpus is small; can graduate to a dedicated store later | ADR-0002 | Pinecone, Weaviate, Qdrant |
 | AI approach | **RAG (no model training)** | Grounding + traceability mandatory (FR-09/NFR-22) | ADR-0003 | Fine-tuning, open-memory LLM |
@@ -146,7 +149,8 @@ flowchart LR
 | Hosting | **In-region (Rwanda / approved African region)** | Law 058/2021 residency (NFR-18) | ADR-0009 | US/EU-only regions |
 | Offline sync | **Local store + queued sync + typed conflict resolution** | Offline-first is a hard constraint (NFR-07) | ADR-0008 | Online-only |
 | Repo layout | **Monorepo** | One small team, atomic cross-cutting changes | ADR-0012 | Polyrepo |
-| App | **Native Android (Kotlin)** | 1 GB RAM / Android 8, <25 MB, offline (NFR-27/28) | ADR-0013 | Flutter/React Native, PWA-only |
+| Mobile app | **Flutter (Dart)** | One codebase + iOS path; offline-first via Drift/sqflite + workmanager. **APK-size (NFR-28) is tight — validate early** | ADR-0015 (supersedes 0013) | Native Kotlin, React Native, PWA-only |
+| AI/RAG service | **Python** (separate service) | Strongest RAG/embedding/eval tooling; isolated for NFR-06/scale | ADR-0011/0014 | All-Node AI (immature tooling) |
 
 ---
 

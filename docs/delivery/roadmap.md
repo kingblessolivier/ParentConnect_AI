@@ -25,7 +25,7 @@ gantt
     Core backend + identity + consent               :p1a, after p0d, 2M
     RAG coach (rw+en) to release gate               :p1b, after p0d, 3M
     Content, nudges, audio; safeguarding+referral   :p1c, after p1a, 2M
-    Android app (offline-first) + SMS channel       :p1d, after p1a, 3M
+    Flutter app (offline-first) + SMS channel        :p1d, after p1a, 3M
     Community sessions + M&E + dashboards           :p1e, after p1c, 2M
     section Phase 2 — Pilot
     Security pen-test + DPIA sign-off + gate pass    :p2a, after p1b, 1M

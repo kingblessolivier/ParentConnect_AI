@@ -38,7 +38,7 @@ flowchart LR
     COV --> SEC[Secret scan + SAST + dependency scan]
     SEC --> AIEVAL[AI eval gate - if AI paths changed]
     AIEVAL --> CFG[Config validation - referral dir non-empty, i18n keys]
-    CFG --> BUILD[Build backend / AI / android artifacts]
+    CFG --> BUILD[Build backend(Node) / AI(Python) / web(Next.js) / mobile(Flutter) artifacts]
     BUILD --> OK{All green?}
     OK -->|yes| MERGE[Merge to dev -> deploy to staging]
     MERGE --> REL[Release PR dev->main -> deploy prod]
@@ -72,7 +72,13 @@ A change is **done** when:
 
 ## Coding conventions
 
-- Backend: Python type hints + Pydantic; lint/format (ruff/black `[VERIFY tool choice]`); module boundaries respected (ADR-0011).
-- Android: Kotlin + Jetpack; offline-first patterns (ADR-0013).
+- **Backend (Node.js + TypeScript, ADR-0014):** strict TypeScript; ESLint + Prettier; framework TBD in a Phase-1 spike (NestJS vs Fastify); module boundaries respected (ADR-0011). Types generated from `openapi.yaml`.
+- **AI/RAG service (Python, ADR-0014):** type hints + Pydantic; lint/format (ruff/black `[VERIFY tool choice]`); separately deployable.
+- **Web (Next.js + React + TypeScript, ADR-0016):** shares TS + generated OpenAPI types with the backend; lean, staff-only console.
+- **Mobile (Flutter/Dart, ADR-0015):** offline-first via Drift/sqflite + workmanager; **measure release APK size against NFR-28 early** (per-ABI App Bundles, on-demand assets).
 - Read like the surrounding code; document the *why*.
 - Dependencies: prefer well-maintained, boring libraries; pin versions; scan for vulnerabilities.
+
+## Coverage note (NFR-33)
+
+The ≥70% core-logic coverage gate applies to **both** the TypeScript backend and the Python AI service (each has its own coverage job in CI). Flutter and web have their own unit/widget test suites.
