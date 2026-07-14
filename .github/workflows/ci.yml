@@ -1,0 +1,122 @@
+name: CI
+
+# Path-filtered CI for the monorepo (ADR-0012). Each project only builds/tests
+# when its files change. Mirrors docs/delivery/engineering-standards.md.
+
+on:
+  pull_request:
+    branches: [dev, main]
+  push:
+    branches: [dev]
+
+permissions:
+  contents: read
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      ai: ${{ steps.filter.outputs.ai }}
+      web: ${{ steps.filter.outputs.web }}
+      mobile: ${{ steps.filter.outputs.mobile }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            backend:
+              - 'backend/**'
+            ai:
+              - 'ai/**'
+            web:
+              - 'web/**'
+            mobile:
+              - 'mobile/**'
+
+  # Runs on every PR regardless of paths: no secrets may be committed (NFR-13).
+  secret-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  backend:
+    needs: changes
+    if: ${{ needs.changes.outputs.backend == 'true' }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run test:coverage   # enforces >=70% core coverage (NFR-33)
+      - run: npm run build
+
+  ai:
+    needs: changes
+    if: ${{ needs.changes.outputs.ai == 'true' }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ai
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -e ".[dev]"
+      - run: ruff check .
+      - run: black --check .
+      - run: pytest --cov --cov-fail-under=70   # NFR-33
+      # NOTE: AI-path changes must also pass the evaluation release gate
+      # (docs/ai/evaluation-framework.md) before merge — wired in Phase 1.
+
+  web:
+    needs: changes
+    if: ${{ needs.changes.outputs.web == 'true' }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build
+
+  mobile:
+    needs: changes
+    if: ${{ needs.changes.outputs.mobile == 'true' }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - run: flutter pub get
+      - run: flutter analyze
+      - run: flutter test
+      # APK-size check against NFR-28 (<25 MB) is added in Phase 1 (ADR-0015).

@@ -1,0 +1,41 @@
+[project]
+name = "parentconnect-ai"
+version = "0.0.0"
+description = "ParentConnect AI RAG/evaluation service (Python). See ADR-0014."
+requires-python = ">=3.11"
+dependencies = [
+    # RAG/retrieval/eval dependencies land in Phase 0/1 (kept minimal in the scaffold).
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-cov>=4.1",
+    "ruff>=0.3",
+    "black>=24.0",
+]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.black]
+line-length = 100
+target-version = ["py311"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--cov=parentconnect_ai --cov-report=term-missing"
+
+[tool.coverage.run]
+source = ["parentconnect_ai"]

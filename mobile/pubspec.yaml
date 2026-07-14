@@ -1,0 +1,24 @@
+name: parentconnect
+description: ParentConnect AI mobile app (Flutter). Offline-first. See ADR-0015.
+publish_to: "none"
+version: 0.0.0+1
+
+environment:
+  sdk: ">=3.3.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  # Offline-first store + background sync land in Phase 1 (ADR-0008/0015):
+  #   drift / sqflite (local store), workmanager (background sync).
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
+  # NFR-28 (<25 MB APK) is tight for Flutter — bundle minimally; fetch audio and
+  # illustrations on demand rather than shipping them. Validate release size in
+  # a Phase-1 spike (ADR-0015).
