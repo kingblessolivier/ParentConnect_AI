@@ -1,0 +1,41 @@
+# Secrets — never commit (NFR-13)
+.env
+.env.*
+*.pem
+*.key
+secrets/
+credentials*.json
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.coverage
+htmlcov/
+dist/
+build/
+*.egg-info/
+
+# Android / Gradle
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+*.apk
+*.keystore
+
+# Node (tooling)
+node_modules/
+
+# Editor / OS
+.idea/
+.vscode/
+.DS_Store
+*.swp
+
+# Data — never commit real or identifiable data
+data/raw/
+*.sqlite
+*.db
