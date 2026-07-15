@@ -30,7 +30,7 @@ ParentConnect AI is a social-impact platform to prevent teenage pregnancy in Rwa
 
 ## Current state
 
-Documentation baseline only. No application code. Phase 0 (per `docs/delivery/roadmap.md`) is knowledge base + evaluation set, **not** code.
+Documentation baseline **plus a monorepo scaffold** (`backend/` Node+TS, `ai/` Python, `web/` Next.js, `mobile/` Flutter, `infra/`) — structure, tooling, and CI only, **no feature logic**. Phase 0 (per `docs/delivery/roadmap.md`) is knowledge base + evaluation set, **not** feature code; feature work starts in Phase 1. Do not add feature logic ahead of the Phase-0 gate.
 
 ## When you don't know
 

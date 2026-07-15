@@ -7,6 +7,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ## [Unreleased]
 
 ### Added
+- **Monorepo scaffold** (structure, tooling, CI — no feature logic): `backend/` (Node+TS), `ai/` (Python), `web/` (Next.js), `mobile/` (Flutter), `infra/` (docker-compose + config bundles).
+- Path-filtered **GitHub Actions CI** (`.github/workflows/ci.yml`): per-project lint/typecheck/test/build, ≥70% coverage gates (NFR-33), and repo-wide secret scanning (NFR-13).
+- Seed core-logic + tests: backend PII-redaction util, AI grounding/citation checks.
 - Full end-to-end development roadmap (`docs/delivery/roadmap.md`) covering inception → Phase 0 → MVP build → pilot → scale → handover, with milestones, workstreams, gates, and RACI.
 - This `CHANGELOG.md`.
 

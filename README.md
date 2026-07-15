@@ -4,7 +4,18 @@
 
 ParentConnect AI equips parents and caregivers to become the first and most trusted educators of their adolescents (aged 10–19) on puberty, relationships, consent, and sexual and reproductive health (SRH). It combines an AI parenting coach (grounded on a clinician-approved knowledge base), SMS/USSD and toll-free IVR channels for basic phones, and community parenting sessions led by Community Health Workers and trained Parent Champions.
 
-> **Status:** Documentation baseline. No production application code exists yet. This repository currently holds the design, requirements, and compliance documents a development team needs before writing code.
+> **Status:** Documentation baseline + **monorepo scaffold**. The design/requirements/compliance docs are complete; the repository now also has project skeletons (structure, tooling, CI) with **no feature logic yet**. Feature work begins in Phase 1 per [`docs/delivery/roadmap.md`](./docs/delivery/roadmap.md) — after Phase 0 (knowledge base + evaluation set).
+
+## Repository layout (code)
+
+| Path | Stack | Purpose |
+|---|---|---|
+| [`backend/`](./backend/) | Node.js + TypeScript (ADR-0014) | Core API & coach orchestrator |
+| [`ai/`](./ai/) | Python (ADR-0014) | RAG & evaluation service (separate) |
+| [`web/`](./web/) | Next.js + React + TS (ADR-0016) | Staff consoles |
+| [`mobile/`](./mobile/) | Flutter (ADR-0015) | Parent-facing app (offline-first) |
+| [`infra/`](./infra/) | Docker/IaC | Local dev, config bundles, deployment |
+| [`docs/`](./docs/) | Markdown | Design, requirements, compliance |
 
 ---
 
