@@ -4,11 +4,21 @@ The retrieval-augmented generation and evaluation service. Kept in Python for th
 
 > **Scaffold only.** No pipeline logic yet. Built in Phase 0 (retrieval spike + eval harness) and Phase 1 (full pipeline).
 
-## What lives here (planned)
+## What lives here
 
-- **Ingestion & chunking** (Kinyarwanda-aware) → embeddings → pgvector + lexical index.
-- **Retrieval** (hybrid dense + lexical) → **reranking** → **grounding gate** → prompt assembly → generation → **post-generation safety** (citation, refusal, injection, PII).
-- **Evaluation harness** and the **release gate** (`docs/ai/evaluation-framework.md`) — the Phase-0 critical path.
+**Phase 0 foundation (implemented — pure logic, no models yet):**
+
+| Module | Purpose |
+|---|---|
+| `kb/schema.py` | Content/version/chunk types; workflow statuses (only `published` is retrievable) |
+| `kb/chunking.py` | Kinyarwanda-aware `normalize()` (synonym-map seam) + semantic `chunk_text()` |
+| `kb/ingest.py` | Ingestion with an **approval guard** — non-published content raises / is skipped (FR-20) |
+| `evaluation/dataset.py` | Eval-set schema + validation (accuracy/crisis/refusal/out-of-scope/adversarial); held-out slice |
+| `evaluation/retrieval_metrics.py` | `recall@k`, `MRR` for the retrieval spike |
+| `evaluation/gate.py` | The **release gate**: pass/fail vs the launch thresholds (NFR-20/21/22, FR-21) |
+| `grounding.py` | Citation/grounding checks (a health answer must cite an approved source) |
+
+**Planned (Phase 0 spike / Phase 1):** embeddings → pgvector + lexical index; hybrid retrieval → reranking → prompt assembly → generation → post-generation safety; wiring the gate to real pipeline runs.
 
 Design docs: [`ai-architecture.md`](../docs/ai/ai-architecture.md), [`kinyarwanda-strategy.md`](../docs/ai/kinyarwanda-strategy.md), [`safety-and-guardrails.md`](../docs/ai/safety-and-guardrails.md), [`evaluation-framework.md`](../docs/ai/evaluation-framework.md).
 
