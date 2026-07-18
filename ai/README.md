@@ -17,8 +17,11 @@ The retrieval-augmented generation and evaluation service. Kept in Python for th
 | `evaluation/retrieval_metrics.py` | `recall@k`, `MRR` for the retrieval spike |
 | `evaluation/gate.py` | The **release gate**: pass/fail vs the launch thresholds (NFR-20/21/22, FR-21) |
 | `grounding.py` | Citation/grounding checks (a health answer must cite an approved source) |
+| `retrieval/interface.py` | `Retriever` protocol + `RetrievalResult` — keeps dense/lexical implementations swappable (ADR-0005) |
+| `retrieval/lexical.py` | Real **BM25** lexical retriever (stdlib only) — the arm that doesn't depend on choosing an embedding model |
+| `retrieval/fusion.py` | **Reciprocal-rank fusion** to merge dense + lexical candidate sets |
 
-**Planned (Phase 0 spike / Phase 1):** embeddings → pgvector + lexical index; hybrid retrieval → reranking → prompt assembly → generation → post-generation safety; wiring the gate to real pipeline runs.
+**Planned (Phase 0 spike / Phase 1):** a dense `Retriever` wrapping a benchmarked multilingual embedding model once the real Kinyarwanda evaluation set exists to benchmark against; pgvector-backed lexical index (Postgres full-text, mirroring `lexical.py`'s BM25 behaviour); reranking → prompt assembly → generation → post-generation safety; wiring the gate to real pipeline runs.
 
 Design docs: [`ai-architecture.md`](../docs/ai/ai-architecture.md), [`kinyarwanda-strategy.md`](../docs/ai/kinyarwanda-strategy.md), [`safety-and-guardrails.md`](../docs/ai/safety-and-guardrails.md), [`evaluation-framework.md`](../docs/ai/evaluation-framework.md).
 
