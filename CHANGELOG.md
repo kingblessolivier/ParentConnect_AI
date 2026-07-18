@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ## [Unreleased]
 
 ### Added
+- **Phase 0 foundation in `ai/`** (pure logic, no models yet), realising `docs/ai/knowledge-base-spec.md` and `docs/ai/evaluation-framework.md`:
+  - KB framework: `kb/schema.py`, Kinyarwanda-aware `kb/chunking.py`, and `kb/ingest.py` with an **approval guard** (only `published` content is ingestable — FR-20).
+  - Evaluation harness: `evaluation/dataset.py` (eval-set schema + validation), `evaluation/retrieval_metrics.py` (recall@k, MRR), and `evaluation/gate.py` (the **release gate** encoding NFR-20/21/22 + FR-21 thresholds).
+  - Full unit-test coverage for all of the above.
 - **Monorepo scaffold** (structure, tooling, CI — no feature logic): `backend/` (Node+TS), `ai/` (Python), `web/` (Next.js), `mobile/` (Flutter), `infra/` (docker-compose + config bundles).
 - Path-filtered **GitHub Actions CI** (`.github/workflows/ci.yml`): per-project lint/typecheck/test/build, ≥70% coverage gates (NFR-33), and repo-wide secret scanning (NFR-13).
 - Seed core-logic + tests: backend PII-redaction util, AI grounding/citation checks.
