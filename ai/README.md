@@ -24,8 +24,9 @@ The retrieval-augmented generation and evaluation service. Kept in Python for th
 | `safety/pii.py` | Output **PII scrub** (phone/email), mirroring `backend/src/lib/redact.ts` for parity across services |
 | `safety/injection.py` | Lexical **prompt-injection scan** — a heuristic backstop, not the primary defence (that's corpus integrity + prompt delimiting) |
 | `safety/crisis.py` | **Crisis/disclosure detection** (FR-13/21) — abuse, exploitation, suicidal ideation, pregnancy. ⚠️ Ships with a minimal English-only **placeholder** pattern set; real patterns (esp. Kinyarwanda) require safeguarding-lead + cultural-panel review before trusting this gate (see module docstring) |
+| `safety/refusal.py` | **Refusal-policy detection** (NFR-21) — diagnosis, prescription/dosing, termination-of-pregnancy-advice requests. Flags the reason only; refusal *wording* (warm, non-directive for termination) is a separate, clinical/policy-reviewed concern. ⚠️ Same placeholder-pattern caveat as `crisis.py` |
 
-**Planned (Phase 0 spike / Phase 1):** a dense `Retriever` wrapping a benchmarked multilingual embedding model once the real Kinyarwanda evaluation set exists to benchmark against; pgvector-backed lexical index (Postgres full-text, mirroring `lexical.py`'s BM25 behaviour); reranking → prompt assembly → generation; real, validated crisis-detection patterns (rw+en); wiring the gates to real pipeline runs.
+**Planned (Phase 0 spike / Phase 1):** a dense `Retriever` wrapping a benchmarked multilingual embedding model once the real Kinyarwanda evaluation set exists to benchmark against; pgvector-backed lexical index (Postgres full-text, mirroring `lexical.py`'s BM25 behaviour); reranking → prompt assembly → generation; real, validated crisis/refusal patterns (rw+en) and the refusal response templates; wiring the gates to real pipeline runs.
 
 Design docs: [`ai-architecture.md`](../docs/ai/ai-architecture.md), [`kinyarwanda-strategy.md`](../docs/ai/kinyarwanda-strategy.md), [`safety-and-guardrails.md`](../docs/ai/safety-and-guardrails.md), [`evaluation-framework.md`](../docs/ai/evaluation-framework.md).
 

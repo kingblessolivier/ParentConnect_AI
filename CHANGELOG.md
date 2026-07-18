@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ## [Unreleased]
 
 ### Added
+- **Refusal-policy detection scaffold** (`ai/src/parentconnect_ai/safety/refusal.py`, NFR-21): lexical detector for diagnosis, prescription/dosing, and termination-of-pregnancy-advice requests. Flags the reason only, not the refusal wording (warm/non-directive phrasing is a separate clinical/policy concern). Same explicitly-non-authoritative placeholder-pattern posture as `crisis.py`. Full unit tests.
 - **Crisis/disclosure detection scaffold** (`ai/src/parentconnect_ai/safety/crisis.py`, FR-13/FR-21): lexical detector for abuse, exploitation, suicidal ideation, and pregnancy disclosures, matching the "no LLM/retrieval needed" pre-generation path in `docs/ai/ai-architecture.md`. Ships with a minimal, explicitly-non-authoritative English placeholder pattern set — real Kinyarwanda/culturally-validated patterns are a safeguarding-lead + cultural-panel deliverable, not something generated here. Full unit tests.
 - **Kinyarwanda embedding/NLP research** (`docs/ai/kinyarwanda-strategy.md`, `docs/decisions-log.md` V4/V8): sourced findings on candidate embedding models (BGE-M3, AfriE5) and a Kinyarwanda-specific retrieval model (KinyaColBERT/KinyaBERT via DeepKIN), plus confirmed public assets from Digital Umuganda, Mbaza NLP, and Common Voice Kinyarwanda. Partnership/licensing terms remain open.
 - **Grounding gate + post-generation safety in `ai/`** (pure logic), realising `docs/ai/ai-architecture.md` stages 6 & 9 and `docs/ai/safety-and-guardrails.md`:
