@@ -7,6 +7,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ## [Unreleased]
 
 ### Added
+- **Hybrid retrieval scaffolding in `ai/`** (pure logic, no embedding model yet), realising ADR-0005 / `docs/ai/kinyarwanda-strategy.md`:
+  - `retrieval/interface.py` — a model-agnostic `Retriever` protocol so dense and lexical implementations (and future embedding-model choices) are swappable.
+  - `retrieval/lexical.py` — a real BM25 lexical retriever (stdlib only), the hybrid-retrieval arm that doesn't depend on an embedding model.
+  - `retrieval/fusion.py` — reciprocal-rank fusion to merge dense + lexical candidate sets.
+  - Full unit-test coverage for all of the above.
 - **Phase 0 foundation in `ai/`** (pure logic, no models yet), realising `docs/ai/knowledge-base-spec.md` and `docs/ai/evaluation-framework.md`:
   - KB framework: `kb/schema.py`, Kinyarwanda-aware `kb/chunking.py`, and `kb/ingest.py` with an **approval guard** (only `published` content is ingestable — FR-20).
   - Evaluation harness: `evaluation/dataset.py` (eval-set schema + validation), `evaluation/retrieval_metrics.py` (recall@k, MRR), and `evaluation/gate.py` (the **release gate** encoding NFR-20/21/22 + FR-21 thresholds).
