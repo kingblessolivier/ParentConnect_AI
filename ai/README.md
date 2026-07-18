@@ -20,8 +20,11 @@ The retrieval-augmented generation and evaluation service. Kept in Python for th
 | `retrieval/interface.py` | `Retriever` protocol + `RetrievalResult` — keeps dense/lexical implementations swappable (ADR-0005) |
 | `retrieval/lexical.py` | Real **BM25** lexical retriever (stdlib only) — the arm that doesn't depend on choosing an embedding model |
 | `retrieval/fusion.py` | **Reciprocal-rank fusion** to merge dense + lexical candidate sets |
+| `retrieval/gate.py` | The **grounding gate** — decides if there's enough approved context to generate, or route to "I don't know" (NFR-21) |
+| `safety/pii.py` | Output **PII scrub** (phone/email), mirroring `backend/src/lib/redact.ts` for parity across services |
+| `safety/injection.py` | Lexical **prompt-injection scan** — a heuristic backstop, not the primary defence (that's corpus integrity + prompt delimiting) |
 
-**Planned (Phase 0 spike / Phase 1):** a dense `Retriever` wrapping a benchmarked multilingual embedding model once the real Kinyarwanda evaluation set exists to benchmark against; pgvector-backed lexical index (Postgres full-text, mirroring `lexical.py`'s BM25 behaviour); reranking → prompt assembly → generation → post-generation safety; wiring the gate to real pipeline runs.
+**Planned (Phase 0 spike / Phase 1):** a dense `Retriever` wrapping a benchmarked multilingual embedding model once the real Kinyarwanda evaluation set exists to benchmark against; pgvector-backed lexical index (Postgres full-text, mirroring `lexical.py`'s BM25 behaviour); reranking → prompt assembly → generation; wiring the gates to real pipeline runs.
 
 Design docs: [`ai-architecture.md`](../docs/ai/ai-architecture.md), [`kinyarwanda-strategy.md`](../docs/ai/kinyarwanda-strategy.md), [`safety-and-guardrails.md`](../docs/ai/safety-and-guardrails.md), [`evaluation-framework.md`](../docs/ai/evaluation-framework.md).
 

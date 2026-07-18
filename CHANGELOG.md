@@ -7,6 +7,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ## [Unreleased]
 
 ### Added
+- **Grounding gate + post-generation safety in `ai/`** (pure logic), realising `docs/ai/ai-architecture.md` stages 6 & 9 and `docs/ai/safety-and-guardrails.md`:
+  - `retrieval/gate.py` — the **grounding gate**: decides if reranked retrieval results clear the relevance/count bar to generate, else route to "I don't know" (NFR-21).
+  - `safety/pii.py` — output **PII scrub** (phone numbers, emails), mirroring `backend/src/lib/redact.ts`'s phone pattern for parity across the Node and Python services (NFR-10/11/15).
+  - `safety/injection.py` — a lexical **prompt-injection scan** (heuristic backstop; corpus integrity and prompt delimiting remain the primary defence).
+  - Full unit-test coverage for all of the above.
 - **Hybrid retrieval scaffolding in `ai/`** (pure logic, no embedding model yet), realising ADR-0005 / `docs/ai/kinyarwanda-strategy.md`:
   - `retrieval/interface.py` — a model-agnostic `Retriever` protocol so dense and lexical implementations (and future embedding-model choices) are swappable.
   - `retrieval/lexical.py` — a real BM25 lexical retriever (stdlib only), the hybrid-retrieval arm that doesn't depend on an embedding model.
