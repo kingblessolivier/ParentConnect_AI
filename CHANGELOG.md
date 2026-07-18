@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ## [Unreleased]
 
 ### Added
+- **Crisis/disclosure detection scaffold** (`ai/src/parentconnect_ai/safety/crisis.py`, FR-13/FR-21): lexical detector for abuse, exploitation, suicidal ideation, and pregnancy disclosures, matching the "no LLM/retrieval needed" pre-generation path in `docs/ai/ai-architecture.md`. Ships with a minimal, explicitly-non-authoritative English placeholder pattern set — real Kinyarwanda/culturally-validated patterns are a safeguarding-lead + cultural-panel deliverable, not something generated here. Full unit tests.
 - **Kinyarwanda embedding/NLP research** (`docs/ai/kinyarwanda-strategy.md`, `docs/decisions-log.md` V4/V8): sourced findings on candidate embedding models (BGE-M3, AfriE5) and a Kinyarwanda-specific retrieval model (KinyaColBERT/KinyaBERT via DeepKIN), plus confirmed public assets from Digital Umuganda, Mbaza NLP, and Common Voice Kinyarwanda. Partnership/licensing terms remain open.
 - **Grounding gate + post-generation safety in `ai/`** (pure logic), realising `docs/ai/ai-architecture.md` stages 6 & 9 and `docs/ai/safety-and-guardrails.md`:
   - `retrieval/gate.py` — the **grounding gate**: decides if reranked retrieval results clear the relevance/count bar to generate, else route to "I don't know" (NFR-21).
