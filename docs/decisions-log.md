@@ -33,19 +33,29 @@ A running log of open questions, assumptions taken, and how they were resolved. 
 
 ## Facts to verify (primary source needed)
 
-| # | Claim | Where used |
-|---|---|---|
-| V1 | Nearest "approved" cloud region under Law 058/2021 (e.g. AWS `af-south-1` Cape Town) | ADR-0009, DPIA |
-| V2 | Isange One Stop Centre directory & child-helpline number(s) | `child-safeguarding-policy.md` |
-| V3 | RBC / NCDA / MoH roles and any partnership agreements | glossary, DPIA, KB spec |
-| V4 | Digital Umuganda / Mbaza NLP / Common Voice Kinyarwanda assets, sizes, licences | `kinyarwanda-strategy.md` |
-| V5 | Supervisory authority registration process & fees | DPIA |
-| V6 | Teenage-pregnancy prevalence statistics for Rwanda | `vision.md` |
-| V7 | Telecom short-code costs & USSD/IVR technical limits (MTN, Airtel) | `cost-model.md`, `channel-design.md` |
+| # | Claim | Status | Where used |
+|---|---|---|---|
+| V1 | Nearest "approved" cloud region under Law 058/2021 (e.g. AWS `af-south-1` Cape Town) | VERIFY | ADR-0009, DPIA |
+| V2 | Isange One Stop Centre directory & child-helpline number(s) | VERIFY | `child-safeguarding-policy.md` |
+| V3 | RBC / NCDA / MoH roles and any partnership agreements | VERIFY | glossary, DPIA, KB spec |
+| V4 | Digital Umuganda / Mbaza NLP / Common Voice Kinyarwanda assets, sizes, licences | **PARTIALLY VERIFIED** (2026-07-18, web research) — public dataset/model facts confirmed with sources; direct collaboration/partnership terms still open. See findings below. | `kinyarwanda-strategy.md` |
+| V5 | Supervisory authority registration process & fees | VERIFY | DPIA |
+| V6 | Teenage-pregnancy prevalence statistics for Rwanda | VERIFY | `vision.md` |
+| V7 | Telecom short-code costs & USSD/IVR technical limits (MTN, Airtel) | VERIFY | `cost-model.md`, `channel-design.md` |
+| V8 | KinyaBERT / KinyaColBERT / DeepKIN toolkit — existence, licence, infra requirements | **VERIFIED** (2026-07-18, web research) — MIT-licensed code at [github.com/anzeyimana/DeepKIN](https://github.com/anzeyimana/DeepKIN); morphological analyser requires a separate free academic licence `[VERIFY: licence terms for our use case]`; toolkit expects a CUDA GPU (12GB+ VRAM). Not previously tracked here — newly discovered while researching V4. | `kinyarwanda-strategy.md` |
+
+### V4/V8 findings detail (2026-07-18 web research)
+
+- **Digital Umuganda**: publicly confirmed 2,260-hour validated Kinyarwanda speech corpus (CC0, via Common Voice) and a 170k-sentence English↔Kinyarwanda parallel corpus (Rwandan Gazette), both open-sourced. Collaboration/support terms beyond the public data still need a direct conversation.
+- **Mbaza NLP**: publicly confirmed 1.07M-download Kinyarwanda monolingual text corpus plus translation/ASR/TTS models. **No embedding or semantic-search model published** — not a drop-in for the retrieval spike.
+- **Common Voice (Kinyarwanda)**: independently confirmed at 2,260 validated hours, CC0 licence.
+- **KinyaBERT/KinyaColBERT (DeepKIN)**: a Kinyarwanda-specific, morphology-aware retrieval model exists and reportedly beats general multilingual embeddings on Kinyarwanda retrieval — a stronger candidate than assumed when this doc was first written, though it carries a separate academic-licence dependency and GPU infra cost.
+- None of the above confirms an actual working relationship with these organisations — that remains open and is a Programme/Partnerships action, not something web research resolves.
 
 ## Change history
 
 | Date | Change |
 |---|---|
+| 2026-07-18 | Web research on Kinyarwanda embedding/NLP options (V4 partially verified, V8 added): confirmed public assets from Digital Umuganda, Mbaza NLP, and Common Voice, and discovered KinyaBERT/KinyaColBERT (DeepKIN) as an existing Kinyarwanda-specific retrieval model. Updated `kinyarwanda-strategy.md`'s embedding-model and partner tables with sourced citations. Partnership/licensing conversations remain open. |
 | 2026-07-14 | Initial documentation baseline created; kickoff blocking questions logged; proceeding on stated assumptions per sponsor instruction. |
 | 2026-07-14 | Tech stack changed by sponsor: Node.js backend, Flutter mobile, Next.js/React web; AI/RAG service stays Python. ADR-0001 & 0013 superseded by ADR-0014/0015/0016. Flutter APK-size risk (NFR-28) flagged. |
