@@ -16,6 +16,7 @@ The retrieval-augmented generation and evaluation service. Kept in Python for th
 | `evaluation/dataset.py` | Eval-set schema + validation (accuracy/crisis/refusal/out-of-scope/adversarial); held-out slice |
 | `evaluation/retrieval_metrics.py` | `recall@k`, `MRR` for the retrieval spike |
 | `evaluation/gate.py` | The **release gate**: pass/fail vs the launch thresholds (NFR-20/21/22, FR-21) |
+| `evaluation/authoring.py` | Eval-set **authoring format** — load & validate the YAML/JSON eval set into typed `EvalCase`s (`load_and_validate`); template at `eval_sets/sample.yaml` |
 | `grounding.py` | Citation/grounding checks (a health answer must cite an approved source) |
 | `retrieval/interface.py` | `Retriever` protocol + `RetrievalResult` — keeps dense/lexical implementations swappable (ADR-0005) |
 | `retrieval/lexical.py` | Real **BM25** lexical retriever (stdlib only) — the arm that doesn't depend on choosing an embedding model |

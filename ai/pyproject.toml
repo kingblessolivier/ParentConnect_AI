@@ -4,7 +4,9 @@ version = "0.0.0"
 description = "ParentConnect AI RAG/evaluation service (Python). See ADR-0014."
 requires-python = ">=3.11"
 dependencies = [
-    # RAG/retrieval/eval dependencies land in Phase 0/1 (kept minimal in the scaffold).
+    # Eval-set authoring format is human-friendly YAML (evaluation/authoring.py).
+    "pyyaml>=6.0",
+    # Further RAG/retrieval dependencies land in Phase 0/1 (kept minimal for now).
 ]
 
 [project.optional-dependencies]
