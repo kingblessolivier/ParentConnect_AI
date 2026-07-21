@@ -21,12 +21,13 @@ The retrieval-augmented generation and evaluation service. Kept in Python for th
 | `retrieval/lexical.py` | Real **BM25** lexical retriever (stdlib only) — the arm that doesn't depend on choosing an embedding model |
 | `retrieval/fusion.py` | **Reciprocal-rank fusion** to merge dense + lexical candidate sets |
 | `retrieval/gate.py` | The **grounding gate** — decides if there's enough approved context to generate, or route to "I don't know" (NFR-21) |
+| `retrieval/spike.py` | **Retrieval spike runner** — runs a `Retriever` over the eval set and reports recall@k/MRR (per *source version id*); `compare_reports` ranks configs. This is how the embedding/retrieval choice is decided by measurement (ADR-0005, evaluation-framework.md) |
 | `safety/pii.py` | Output **PII scrub** (phone/email), mirroring `backend/src/lib/redact.ts` for parity across services |
 | `safety/injection.py` | Lexical **prompt-injection scan** — a heuristic backstop, not the primary defence (that's corpus integrity + prompt delimiting) |
 | `safety/crisis.py` | **Crisis/disclosure detection** (FR-13/21) — abuse, exploitation, suicidal ideation, pregnancy. ⚠️ Ships with a minimal English-only **placeholder** pattern set; real patterns (esp. Kinyarwanda) require safeguarding-lead + cultural-panel review before trusting this gate (see module docstring) |
 | `safety/refusal.py` | **Refusal-policy detection** (NFR-21) — diagnosis, prescription/dosing, termination-of-pregnancy-advice requests. Flags the reason only; refusal *wording* (warm, non-directive for termination) is a separate, clinical/policy-reviewed concern. ⚠️ Same placeholder-pattern caveat as `crisis.py` |
 
-**Planned (Phase 0 spike / Phase 1):** a dense `Retriever` wrapping a benchmarked multilingual embedding model once the real Kinyarwanda evaluation set exists to benchmark against; pgvector-backed lexical index (Postgres full-text, mirroring `lexical.py`'s BM25 behaviour); reranking → prompt assembly → generation; real, validated crisis/refusal patterns (rw+en) and the refusal response templates; wiring the gates to real pipeline runs.
+**Planned (Phase 0 spike / Phase 1):** a dense `Retriever` wrapping a benchmarked multilingual embedding model once the real Kinyarwanda evaluation set exists to benchmark against (run it through `retrieval/spike.py` alongside BM25 and a fused config to pick a winner); pgvector-backed lexical index (Postgres full-text, mirroring `lexical.py`'s BM25 behaviour); reranking → prompt assembly → generation; real, validated crisis/refusal patterns (rw+en) and the refusal response templates; wiring the gates to real pipeline runs.
 
 Design docs: [`ai-architecture.md`](../docs/ai/ai-architecture.md), [`kinyarwanda-strategy.md`](../docs/ai/kinyarwanda-strategy.md), [`safety-and-guardrails.md`](../docs/ai/safety-and-guardrails.md), [`evaluation-framework.md`](../docs/ai/evaluation-framework.md).
 
