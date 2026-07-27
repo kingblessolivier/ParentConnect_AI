@@ -46,6 +46,15 @@ npm run dev                                               # boots on Postgres
 
 Without `DATABASE_URL`, the app runs on in-memory repositories (handy for local UI work and tests).
 
+## Coach (AI) — `modules/coach`
+
+The Node tier **never answers health questions itself** — it calls the Python AI/RAG service (ADR-0003/0014):
+- `POST /api/v1/conversations` → mints a conversation id.
+- `POST /api/v1/conversations/:id/messages` → sends the question + language + age band (**no PII**, ADR-0004) to the AI service and returns the grounded answer + citations + conversation starters.
+- **Graceful degradation (NFR-06):** a **timeout + circuit breaker** wraps the AI call. If the AI service is slow/down, the parent gets a clear "I'll answer when I can" message in their language, the question is marked **queued**, and **referral info is always attached** — the referral pathway is never gated by the AI. On a crisis flag, referral info is attached too (FR-21).
+
+The AI client is injectable (`AppDeps.coach.aiClient`) for tests; message persistence (P3, with retention controls) is a later slice.
+
 ## Responsibilities (planned modules)
 
 `identity & consent` · `coach orchestrator` (calls the Python AI service) · `content & nudges` · `safeguarding & referral` · `community sessions` · `M&E` · `admin & CMS`.

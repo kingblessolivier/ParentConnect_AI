@@ -10,6 +10,8 @@ import Fastify, { type FastifyInstance } from 'fastify';
 import type { AppConfig } from './config.js';
 import { buildProblemResponse } from './lib/error-handler.js';
 import { toProblem } from './lib/problem.js';
+import type { AiClient } from './modules/coach/ai-client.js';
+import { coachRoutes } from './modules/coach/routes.js';
 import { identityRoutes } from './modules/identity/routes.js';
 import type {
   ConsentRepository,
@@ -24,6 +26,10 @@ export interface AppDeps {
     parentRepo: ParentRepository;
     consentRepo: ConsentRepository;
     otpRepo: OtpRepository;
+  };
+  /** Inject a custom AI client (e.g. a fake in tests). Defaults to HTTP. */
+  coach?: {
+    aiClient: AiClient;
   };
 }
 
@@ -57,6 +63,7 @@ export async function buildApp(config: AppConfig, deps: AppDeps = {}): Promise<F
   // Modules (ADR-0011). Each fails fast if its config is invalid.
   await app.register(safeguardingRoutes, { config });
   await app.register(identityRoutes, { config, ...(deps.identity ?? {}) });
+  await app.register(coachRoutes, { config, ...(deps.coach ?? {}) });
 
   await app.ready();
   return app;
