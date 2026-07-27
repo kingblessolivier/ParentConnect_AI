@@ -13,7 +13,8 @@ export default defineConfig({
         statements: 70,
       },
       include: ['src/**/*.ts'],
-      exclude: ['src/**/*.test.ts', 'src/index.ts'],
+      // index.ts and scripts/* are entrypoints exercised only against a real DB.
+      exclude: ['src/**/*.test.ts', 'src/index.ts', 'src/scripts/**'],
     },
   },
 });
