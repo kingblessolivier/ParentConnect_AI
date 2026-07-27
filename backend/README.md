@@ -72,6 +72,14 @@ Scheduled parenting tips (FR-17), segmented by child age band + language, over S
 - **Admin** (`POST /api/v1/admin/campaigns`, `.../:id/nudges`, `.../nudges/dispatch`): create campaigns, schedule nudges, dispatch due ones. Dispatch resolves the segment (child band + language), **skips opted-out parents**, and sends via the gateway. In production a scheduled worker calls the dispatch service.
 - **Parents** (`POST /api/v1/nudges/opt-out` / `opt-in`, NFR-17).
 
+## Community sessions — `modules/sessions`
+
+CHW/Parent-Champion led sessions (FR-25–28):
+- **Facilitators** (`chw`/`champion`/`admin`): `POST /api/v1/sessions` (schedule), `POST /api/v1/sessions/:id/attendance`, `POST /api/v1/sessions/:id/outcome`, `GET /api/v1/sessions/guide/:topic` (discussion prompts, FR-26).
+- **Offline-first (FR-27, NFR-07):** attendance is **idempotent on `client_id`** — a device-generated id — so records captured offline **replay safely** on sync with no duplicates (ADR-0008).
+- **Linking (FR-28):** attendance links a session to a parent (never a child); parents see the sessions they attended via `GET /api/v1/me/sessions`.
+- Postgres-backed (`migrations/0004_sessions.sql`, `pg-mem`-tested).
+
 ## Responsibilities (planned modules)
 
 `identity & consent` · `coach orchestrator` (calls the Python AI service) · `content & nudges` · `safeguarding & referral` · `community sessions` · `M&E` · `admin & CMS`.

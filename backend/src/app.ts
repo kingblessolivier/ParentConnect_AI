@@ -24,6 +24,8 @@ import type { MessageGateway } from './modules/messaging/gateway.js';
 import { nudgeRoutes } from './modules/nudges/routes.js';
 import type { NudgeRepository } from './modules/nudges/repository.js';
 import { safeguardingRoutes } from './modules/safeguarding/routes.js';
+import { sessionRoutes } from './modules/sessions/routes.js';
+import type { SessionRepository } from './modules/sessions/repository.js';
 
 export interface AppDeps {
   /** Inject persistent repositories (e.g. Postgres). Defaults to in-memory. */
@@ -45,6 +47,10 @@ export interface AppDeps {
     nudgeRepo: NudgeRepository;
     parentRepo: ParentRepository;
     gateway?: MessageGateway;
+  };
+  /** Inject a persistent session repository. Defaults to in-memory. */
+  sessions?: {
+    sessionRepo: SessionRepository;
   };
 }
 
@@ -81,6 +87,7 @@ export async function buildApp(config: AppConfig, deps: AppDeps = {}): Promise<F
   await app.register(coachRoutes, { config, ...(deps.coach ?? {}) });
   await app.register(contentRoutes, { config, ...(deps.content ?? {}) });
   await app.register(nudgeRoutes, { config, ...(deps.nudges ?? {}) });
+  await app.register(sessionRoutes, { config, ...(deps.sessions ?? {}) });
 
   await app.ready();
   return app;
