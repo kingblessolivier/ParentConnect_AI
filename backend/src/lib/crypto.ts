@@ -7,10 +7,42 @@
  *   algorithm is small and boring). Secrets come from config, never source (NFR-13).
  */
 
-import { createHmac, randomInt, timingSafeEqual } from 'node:crypto';
+import {
+  createCipheriv,
+  createDecipheriv,
+  createHmac,
+  randomBytes,
+  randomInt,
+  timingSafeEqual,
+} from 'node:crypto';
 
 export function hmacHex(value: string, key: string): string {
   return createHmac('sha256', key).update(value).digest('hex');
+}
+
+/**
+ * Reversible encryption for data we must recover but keep confidential at rest
+ * (AES-256 per NFR-09) — e.g. a phone number needed to deliver server-initiated
+ * SMS/IVR. `keyHex` is 32 bytes (64 hex chars). Output is base64(iv|tag|cipher).
+ */
+export function encryptSecret(plaintext: string, keyHex: string): string {
+  const key = Buffer.from(keyHex, 'hex');
+  const iv = randomBytes(12);
+  const cipher = createCipheriv('aes-256-gcm', key, iv);
+  const ciphertext = Buffer.concat([cipher.update(plaintext, 'utf8'), cipher.final()]);
+  const tag = cipher.getAuthTag();
+  return Buffer.concat([iv, tag, ciphertext]).toString('base64');
+}
+
+export function decryptSecret(payload: string, keyHex: string): string {
+  const key = Buffer.from(keyHex, 'hex');
+  const buf = Buffer.from(payload, 'base64');
+  const iv = buf.subarray(0, 12);
+  const tag = buf.subarray(12, 28);
+  const ciphertext = buf.subarray(28);
+  const decipher = createDecipheriv('aes-256-gcm', key, iv);
+  decipher.setAuthTag(tag);
+  return Buffer.concat([decipher.update(ciphertext), decipher.final()]).toString('utf8');
 }
 
 /** Keyed hash of a phone number for storage/lookup (P2). */

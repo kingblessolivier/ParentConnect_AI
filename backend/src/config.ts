@@ -23,6 +23,8 @@ export interface AppConfig {
   readonly jwtSecret: string;
   /** Keyed pepper for hashing phone numbers (P2). Never a default in production. */
   readonly phonePepper: string;
+  /** AES-256 key (64 hex chars) for encrypting recoverable secrets, e.g. phone numbers for outbound SMS. */
+  readonly phoneEncKey: string;
   /** OTP time-to-live (FR-01). */
   readonly otpTtlSeconds: number;
   /** Max OTP verification attempts before lockout (FR-01). */
@@ -35,6 +37,8 @@ export interface AppConfig {
 
 const DEV_JWT_SECRET = 'dev-insecure-jwt-secret';
 const DEV_PHONE_PEPPER = 'dev-insecure-phone-pepper';
+// 32-byte (64 hex) dev-only key. Production must set a real PHONE_ENC_KEY.
+const DEV_PHONE_ENC_KEY = '00000000000000000000000000000000000000000000000000000000000000ff';
 
 function parseNodeEnv(value: string | undefined): NodeEnv {
   if (value === 'production' || value === 'test') return value;
@@ -62,10 +66,21 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
 
   const jwtSecret = env.JWT_SECRET ?? DEV_JWT_SECRET;
   const phonePepper = env.PHONE_PEPPER ?? DEV_PHONE_PEPPER;
+  const phoneEncKey = env.PHONE_ENC_KEY ?? DEV_PHONE_ENC_KEY;
 
   // Never run production on the insecure development secrets (NFR-13).
-  if (nodeEnv === 'production' && (jwtSecret === DEV_JWT_SECRET || phonePepper === DEV_PHONE_PEPPER)) {
-    throw new Error('Refusing to start: JWT_SECRET and PHONE_PEPPER must be set in production (NFR-13).');
+  if (
+    nodeEnv === 'production' &&
+    (jwtSecret === DEV_JWT_SECRET ||
+      phonePepper === DEV_PHONE_PEPPER ||
+      phoneEncKey === DEV_PHONE_ENC_KEY)
+  ) {
+    throw new Error(
+      'Refusing to start: JWT_SECRET, PHONE_PEPPER, and PHONE_ENC_KEY must be set in production (NFR-13).',
+    );
+  }
+  if (!/^[0-9a-fA-F]{64}$/.test(phoneEncKey)) {
+    throw new Error('PHONE_ENC_KEY must be 64 hex characters (32 bytes for AES-256).');
   }
 
   return {
@@ -77,6 +92,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     databaseUrl: env.DATABASE_URL,
     jwtSecret,
     phonePepper,
+    phoneEncKey,
     otpTtlSeconds: Number(env.OTP_TTL_SECONDS ?? 600),
     otpMaxAttempts: Number(env.OTP_MAX_ATTEMPTS ?? 3),
     accessTtlSeconds: Number(env.ACCESS_TTL_SECONDS ?? 900),

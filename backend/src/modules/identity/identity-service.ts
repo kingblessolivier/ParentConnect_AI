@@ -9,7 +9,7 @@
  */
 
 import { AppError } from '../../lib/problem.js';
-import { hashPhone, signToken } from '../../lib/crypto.js';
+import { encryptSecret, hashPhone, signToken } from '../../lib/crypto.js';
 import type { AppConfig } from '../../config.js';
 import type { ParentRepository } from './repository.js';
 import type { ParentProfile, ProfileInput, Role } from './types.js';
@@ -22,7 +22,7 @@ export interface TokenPair {
 
 type IdentityConfig = Pick<
   AppConfig,
-  'phonePepper' | 'jwtSecret' | 'accessTtlSeconds' | 'refreshTtlSeconds'
+  'phonePepper' | 'phoneEncKey' | 'jwtSecret' | 'accessTtlSeconds' | 'refreshTtlSeconds'
 >;
 
 export class IdentityService {
@@ -44,11 +44,18 @@ export class IdentityService {
     };
   }
 
-  /** Get-or-create a parent for a verified phone hash (self-registration). */
-  async registerVerified(phoneHash: string, profile: ProfileInput): Promise<ParentProfile> {
+  /** Get-or-create a parent for a verified phone number (self-registration). */
+  async registerVerified(phone: string, profile: ProfileInput): Promise<ParentProfile> {
+    const phoneHash = hashPhone(phone, this.config.phonePepper);
     const existing = await this.parentRepo.findByPhoneHash(phoneHash);
     if (existing) return existing;
-    return this.parentRepo.create({ phoneHash, role: 'parent', ...this.applyProfile(profile) });
+    const phoneEnc = encryptSecret(phone, this.config.phoneEncKey);
+    return this.parentRepo.create({
+      phoneHash,
+      phoneEnc,
+      role: 'parent',
+      ...this.applyProfile(profile),
+    });
   }
 
   /** Assisted onboarding by a CHW/champion/admin (FR-03). */
@@ -56,7 +63,13 @@ export class IdentityService {
     const phoneHash = hashPhone(phone, this.config.phonePepper);
     const existing = await this.parentRepo.findByPhoneHash(phoneHash);
     if (existing) throw new AppError(409, 'Parent already registered');
-    return this.parentRepo.create({ phoneHash, role: 'parent', ...this.applyProfile(profile) });
+    const phoneEnc = encryptSecret(phone, this.config.phoneEncKey);
+    return this.parentRepo.create({
+      phoneHash,
+      phoneEnc,
+      role: 'parent',
+      ...this.applyProfile(profile),
+    });
   }
 
   async getProfile(id: string): Promise<ParentProfile> {

@@ -19,8 +19,10 @@ export const AGE_BANDS: readonly AgeBand[] = ['10_12', '13_15', '16_19'];
 
 export interface ParentProfile {
   id: string;
-  /** Hashed phone number (P2) — never the raw number. */
+  /** Hashed phone number (P2) for lookup — never the raw number. */
   phoneHash: string;
+  /** Encrypted phone number (P2) for outbound delivery (SMS/IVR). Never exposed. */
+  phoneEnc?: string;
   /** Optional friendly alias; a real name is never required (FR-04). */
   displayAlias?: string;
   district?: string;

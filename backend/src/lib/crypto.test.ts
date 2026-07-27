@@ -1,12 +1,32 @@
 import { describe, it, expect } from 'vitest';
 import {
   constantTimeEqual,
+  decryptSecret,
+  encryptSecret,
   generateOtp,
   hashPhone,
   signToken,
   TokenError,
   verifyToken,
 } from './crypto.js';
+
+const KEY = '00000000000000000000000000000000000000000000000000000000000000ff';
+
+describe('encryptSecret / decryptSecret', () => {
+  it('round-trips a phone number', () => {
+    const enc = encryptSecret('+250788123456', KEY);
+    expect(enc).not.toContain('788');
+    expect(decryptSecret(enc, KEY)).toBe('+250788123456');
+  });
+  it('produces a different ciphertext each time (random IV)', () => {
+    expect(encryptSecret('x', KEY)).not.toBe(encryptSecret('x', KEY));
+  });
+  it('fails to decrypt with the wrong key', () => {
+    const enc = encryptSecret('secret', KEY);
+    const otherKey = 'ff'.repeat(32);
+    expect(() => decryptSecret(enc, otherKey)).toThrow();
+  });
+});
 
 describe('hashPhone', () => {
   it('is deterministic for the same phone+pepper and hides the number', () => {
