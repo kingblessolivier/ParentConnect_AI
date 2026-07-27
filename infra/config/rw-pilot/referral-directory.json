@@ -1,0 +1,17 @@
+[
+  {
+    "name": "Isange One Stop Centre",
+    "phone": "[VERIFY: per-district Isange centre number]",
+    "type": "one_stop_centre"
+  },
+  {
+    "name": "National Child Helpline",
+    "phone": "[VERIFY: national child helpline number]",
+    "type": "child_helpline"
+  },
+  {
+    "name": "Nearest Health Facility",
+    "phone": "[VERIFY: district health facility contact]",
+    "type": "health_facility"
+  }
+]
