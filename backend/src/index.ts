@@ -17,6 +17,7 @@ import {
 } from './modules/identity/pg-repository.js';
 import { LogGateway } from './modules/messaging/gateway.js';
 import { PgNudgeRepository } from './modules/nudges/pg-repository.js';
+import { PgSessionRepository } from './modules/sessions/pg-repository.js';
 
 async function main(): Promise<void> {
   const config = loadConfig();
@@ -35,6 +36,7 @@ async function main(): Promise<void> {
     // Nudges share the same parent repo for segmentation; LogGateway until an
     // aggregator is arranged (Q5, ADR-0006).
     deps.nudges = { nudgeRepo: new PgNudgeRepository(pool), parentRepo, gateway: new LogGateway() };
+    deps.sessions = { sessionRepo: new PgSessionRepository(pool) };
   }
 
   const app = await buildApp(config, deps);

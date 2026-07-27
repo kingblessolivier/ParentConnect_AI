@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ## [Unreleased]
 
 ### Added
+- **Backend: community sessions** (`backend/src/modules/sessions`) — FR-25–28. Facilitators (CHW/champion/admin) schedule sessions, record attendance + outcomes, and get topic **discussion guides** (FR-26). **Offline-first (FR-27/NFR-07):** attendance is **idempotent on a device `client_id`** so records captured offline replay safely with no duplicates (ADR-0008). Attendance **links a session to a parent** (FR-28, never a child) and parents see their attended sessions (`GET /me/sessions`). Postgres-backed (`migrations/0004_sessions.sql`, `pg-mem`-tested). 149 backend tests, ~97% coverage.
 - **Backend: scheduled nudges + messaging foundation** (`backend/src/modules/nudges`, `modules/messaging`) — FR-17, NFR-17/31, plus the outbound-messaging prerequisites:
   - **Channel gateway abstraction** (ADR-0006/NFR-31): swappable `MessageGateway` (`FakeGateway`/`LogGateway`; real aggregator adapter later).
   - **Encrypted phone** (AES-256-GCM `encryptSecret`/`decryptSecret`, migration 0003 `phone_enc`): server-initiated SMS can reach a parent; decrypted only at send time; production requires a real `PHONE_ENC_KEY` (NFR-13, NFR-09). Identity now stores it on registration.
