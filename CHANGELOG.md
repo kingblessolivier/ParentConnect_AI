@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ## [Unreleased]
 
 ### Added
+- **Backend: PostgreSQL persistence** (ADR-0002) — the identity/consent repositories now have real Postgres implementations (`pg-repository.ts`) behind the same interfaces, plus a boring plain-SQL **migration runner** (`lib/migrate.ts` + `migrations/0001_identity.sql`). The schema has **no child-identity columns** (FR-24/NFR-15); phone numbers hashed (P2); OTPs hashed. The app boots on Postgres when `DATABASE_URL` is set (migrations run first) and falls back to in-memory repos otherwise. SQL is tested for real against an in-memory Postgres (`pg-mem`) — 84 backend tests, ~98% coverage. Adds `npm run migrate`.
 - **Backend: identity & consent slice** (`backend/src/modules/identity`) — FR-01/03/04/05/06, NFR-16/17:
   - Phone + **SMS OTP** auth with rate limiting + lockout (FR-01); OTPs stored hashed, verified in constant time; HS256 session tokens (`lib/crypto.ts`, no third-party dep). Phone numbers stored **hashed** (P2).
   - **Parent profile** with **age bands only** — validation actively **rejects child-identity fields** (childName/dob/nationalId) (FR-24/NFR-15); anonymity supported (FR-04).

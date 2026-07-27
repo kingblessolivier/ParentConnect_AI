@@ -32,7 +32,19 @@ src/
   - `GET /api/v1/me` · `PATCH /api/v1/me` — profile with **age bands only**; forbidden child-identity fields are rejected (FR-06/24, NFR-15).
   - `POST /api/v1/parents` — assisted onboarding, role-gated to CHW/champion/admin (FR-03/05).
   - `POST /api/v1/consent` · `POST /api/v1/consent/withdraw` — recorded in the user's language (NFR-16/17).
-  - Auth/RBAC enforced at the API (`auth.ts`), never trusted from the client (NFR-10). Data access is behind repository interfaces with in-memory implementations; **Postgres implementations are the next slice** (ADR-0002).
+  - Auth/RBAC enforced at the API (`auth.ts`), never trusted from the client (NFR-10).
+- **Persistence** (ADR-0002): **PostgreSQL** repository implementations (`pg-repository.ts`) behind the same interfaces, plus a plain-SQL **migration runner** (`lib/migrate.ts`, `migrations/*.sql`). The schema has **no child-identity columns** (FR-24/NFR-15). When `DATABASE_URL` is set the app boots on Postgres (running migrations first); otherwise it uses in-memory repos. Repos are tested against an in-memory Postgres (`pg-mem`), so the SQL is exercised for real without a live DB.
+
+## Database
+
+```bash
+docker compose -f ../infra/docker-compose.yml up -d db   # Postgres + pgvector
+export DATABASE_URL=postgres://parentconnect:parentconnect@localhost:5432/parentconnect
+npm run migrate                                           # apply migrations
+npm run dev                                               # boots on Postgres
+```
+
+Without `DATABASE_URL`, the app runs on in-memory repositories (handy for local UI work and tests).
 
 ## Responsibilities (planned modules)
 

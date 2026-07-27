@@ -17,6 +17,8 @@ export interface AppConfig {
   readonly configDir: string;
   /** Internal URL of the Python AI/RAG service (ADR-0014). */
   readonly aiServiceUrl: string;
+  /** Postgres connection string (ADR-0002). When unset, in-memory repos are used. */
+  readonly databaseUrl: string | undefined;
   /** Secret for signing session tokens (HS256). Never a default in production. */
   readonly jwtSecret: string;
   /** Keyed pepper for hashing phone numbers (P2). Never a default in production. */
@@ -72,6 +74,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     debug,
     configDir: env.CONFIG_DIR ?? 'infra/config/rw-pilot',
     aiServiceUrl: env.AI_SERVICE_URL ?? 'http://localhost:8000',
+    databaseUrl: env.DATABASE_URL,
     jwtSecret,
     phonePepper,
     otpTtlSeconds: Number(env.OTP_TTL_SECONDS ?? 600),

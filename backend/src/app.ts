@@ -11,9 +11,23 @@ import type { AppConfig } from './config.js';
 import { buildProblemResponse } from './lib/error-handler.js';
 import { toProblem } from './lib/problem.js';
 import { identityRoutes } from './modules/identity/routes.js';
+import type {
+  ConsentRepository,
+  OtpRepository,
+  ParentRepository,
+} from './modules/identity/repository.js';
 import { safeguardingRoutes } from './modules/safeguarding/routes.js';
 
-export async function buildApp(config: AppConfig): Promise<FastifyInstance> {
+export interface AppDeps {
+  /** Inject persistent repositories (e.g. Postgres). Defaults to in-memory. */
+  identity?: {
+    parentRepo: ParentRepository;
+    consentRepo: ConsentRepository;
+    otpRepo: OtpRepository;
+  };
+}
+
+export async function buildApp(config: AppConfig, deps: AppDeps = {}): Promise<FastifyInstance> {
   const app = Fastify({
     logger: {
       level: config.debug ? 'debug' : 'info',
@@ -42,7 +56,7 @@ export async function buildApp(config: AppConfig): Promise<FastifyInstance> {
 
   // Modules (ADR-0011). Each fails fast if its config is invalid.
   await app.register(safeguardingRoutes, { config });
-  await app.register(identityRoutes, { config });
+  await app.register(identityRoutes, { config, ...(deps.identity ?? {}) });
 
   await app.ready();
   return app;
