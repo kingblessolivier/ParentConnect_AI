@@ -10,6 +10,7 @@ import Fastify, { type FastifyInstance } from 'fastify';
 import type { AppConfig } from './config.js';
 import { buildProblemResponse } from './lib/error-handler.js';
 import { toProblem } from './lib/problem.js';
+import { identityRoutes } from './modules/identity/routes.js';
 import { safeguardingRoutes } from './modules/safeguarding/routes.js';
 
 export async function buildApp(config: AppConfig): Promise<FastifyInstance> {
@@ -41,6 +42,7 @@ export async function buildApp(config: AppConfig): Promise<FastifyInstance> {
 
   // Modules (ADR-0011). Each fails fast if its config is invalid.
   await app.register(safeguardingRoutes, { config });
+  await app.register(identityRoutes, { config });
 
   await app.ready();
   return app;

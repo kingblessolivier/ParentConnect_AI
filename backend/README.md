@@ -27,6 +27,12 @@ src/
 
 - **Health**: `GET /health`.
 - **Referral directory** (FR-21): `GET /api/v1/referral-directory?district=` — loaded from the deployment config bundle, **available with no AI/DB dependency** (NFR-06); startup fails if the directory is missing/empty (ADR-0010).
+- **Identity & consent** (`modules/identity`):
+  - `POST /api/v1/auth/otp/request` · `POST /api/v1/auth/otp/verify` — phone + SMS OTP with rate limiting/lockout (FR-01); OTPs stored hashed; HS256 session tokens.
+  - `GET /api/v1/me` · `PATCH /api/v1/me` — profile with **age bands only**; forbidden child-identity fields are rejected (FR-06/24, NFR-15).
+  - `POST /api/v1/parents` — assisted onboarding, role-gated to CHW/champion/admin (FR-03/05).
+  - `POST /api/v1/consent` · `POST /api/v1/consent/withdraw` — recorded in the user's language (NFR-16/17).
+  - Auth/RBAC enforced at the API (`auth.ts`), never trusted from the client (NFR-10). Data access is behind repository interfaces with in-memory implementations; **Postgres implementations are the next slice** (ADR-0002).
 
 ## Responsibilities (planned modules)
 
