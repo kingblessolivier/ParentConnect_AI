@@ -9,6 +9,7 @@ import { buildApp, type AppDeps } from './app.js';
 import { loadConfig } from './config.js';
 import { createPool } from './lib/db.js';
 import { runMigrations } from './lib/migrate.js';
+import { PgContentRepository } from './modules/content/pg-repository.js';
 import {
   PgConsentRepository,
   PgOtpRepository,
@@ -27,6 +28,7 @@ async function main(): Promise<void> {
       consentRepo: new PgConsentRepository(pool),
       otpRepo: new PgOtpRepository(pool),
     };
+    deps.content = { contentRepo: new PgContentRepository(pool) };
   }
 
   const app = await buildApp(config, deps);

@@ -12,6 +12,8 @@ import { buildProblemResponse } from './lib/error-handler.js';
 import { toProblem } from './lib/problem.js';
 import type { AiClient } from './modules/coach/ai-client.js';
 import { coachRoutes } from './modules/coach/routes.js';
+import { contentRoutes } from './modules/content/routes.js';
+import type { ContentRepository } from './modules/content/repository.js';
 import { identityRoutes } from './modules/identity/routes.js';
 import type {
   ConsentRepository,
@@ -30,6 +32,10 @@ export interface AppDeps {
   /** Inject a custom AI client (e.g. a fake in tests). Defaults to HTTP. */
   coach?: {
     aiClient: AiClient;
+  };
+  /** Inject a persistent content repository. Defaults to in-memory. */
+  content?: {
+    contentRepo: ContentRepository;
   };
 }
 
@@ -64,6 +70,7 @@ export async function buildApp(config: AppConfig, deps: AppDeps = {}): Promise<F
   await app.register(safeguardingRoutes, { config });
   await app.register(identityRoutes, { config, ...(deps.identity ?? {}) });
   await app.register(coachRoutes, { config, ...(deps.coach ?? {}) });
+  await app.register(contentRoutes, { config, ...(deps.content ?? {}) });
 
   await app.ready();
   return app;

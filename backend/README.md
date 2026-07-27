@@ -55,6 +55,15 @@ The Node tier **never answers health questions itself** — it calls the Python 
 
 The AI client is injectable (`AppDeps.coach.aiClient`) for tests; message persistence (P3, with retention controls) is a later slice.
 
+## Content & CMS — `modules/content`
+
+Micro-learning modules (FR-16) with **audio** (FR-19) and a gated **editorial workflow** (FR-20):
+- **Parents** read only **published** modules: `GET /api/v1/content?topic=&ageBand=&language=` and `GET /api/v1/content/:itemId`.
+- **Reviewers/admins** author and drive the workflow: `POST /api/v1/cms/items` (create draft), `POST /api/v1/cms/versions/:id/transition`.
+- The **state machine** (`workflow.ts`) enforces `draft → clinical_review → cultural_review → approved → published → retired` (+ rejection paths), each **role-gated** — only `admin` may publish/retire. **Nothing unapproved is ever served.** Approvers are stamped (clinical/cultural) and `publishedAt` recorded. Postgres-backed (`migrations/0002_content.sql`), tested against `pg-mem`.
+
+Content feedback/ratings (FR-34) and scheduled nudges (FR-17) are the next content slices.
+
 ## Responsibilities (planned modules)
 
 `identity & consent` · `coach orchestrator` (calls the Python AI service) · `content & nudges` · `safeguarding & referral` · `community sessions` · `M&E` · `admin & CMS`.
