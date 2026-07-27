@@ -28,6 +28,8 @@ android/local.properties
 
 # Node (tooling)
 node_modules/
+coverage/
+*.tsbuildinfo
 
 # Editor / OS
 .idea/

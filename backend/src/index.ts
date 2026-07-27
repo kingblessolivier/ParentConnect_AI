@@ -1,23 +1,25 @@
 /**
- * ParentConnect AI backend entrypoint (scaffold).
+ * ParentConnect AI backend entrypoint (Fastify, ADR-0017).
  *
- * This is a structural placeholder only — no feature logic yet. The concrete
- * HTTP framework (NestJS vs Fastify) is decided in a Phase-1 spike (ADR-0014).
- * Feature modules (identity, coach orchestrator, content, safeguarding,
- * sessions, m&e, admin) land in Phase 1 per docs/delivery/roadmap.md.
- *
- * The coach orchestrator calls the Python AI/RAG service over an internal
- * HTTP/JSON API (ADR-0014); nothing here answers health questions directly.
+ * Loads config (with production safety assertions), builds the app, and listens.
+ * Feature modules are registered inside `buildApp`.
  */
 
-export const APP_NAME = 'parentconnect-backend';
+import { buildApp } from './app.js';
+import { loadConfig } from './config.js';
 
-function main(): void {
-  // eslint-disable-next-line no-console
-  console.log(`${APP_NAME}: scaffold. See docs/delivery/roadmap.md Phase 1.`);
+async function main(): Promise<void> {
+  const config = loadConfig();
+  const app = await buildApp(config);
+  await app.listen({ port: config.port, host: '0.0.0.0' });
+  app.log.info(`parentconnect-backend listening on :${config.port} (${config.nodeEnv})`);
 }
 
-// Only run when invoked directly.
+// Only run when invoked directly (not when imported by tests).
 if (import.meta.url === `file://${process.argv[1]}`) {
-  main();
+  main().catch((err) => {
+    // eslint-disable-next-line no-console
+    console.error(err);
+    process.exit(1);
+  });
 }

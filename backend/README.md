@@ -1,8 +1,32 @@
-# backend — Node.js + TypeScript API
+# backend — Node.js + TypeScript API (Fastify)
 
-The core backend (modular monolith) for ParentConnect AI. See [ADR-0014](../docs/architecture/adr/0014-backend-nodejs.md) and [system-architecture.md](../docs/architecture/system-architecture.md).
+The core backend (modular monolith) for ParentConnect AI. See [ADR-0014](../docs/architecture/adr/0014-backend-nodejs.md), [ADR-0017 (Fastify)](../docs/architecture/adr/0017-backend-http-framework.md), and [system-architecture.md](../docs/architecture/system-architecture.md).
 
-> **Scaffold only.** No feature logic yet. Modules land in Phase 1 (`docs/delivery/roadmap.md`).
+> **Phase 1 in progress.** The app boots and serves its first safety-critical slice (the referral directory). Remaining modules land slice by slice (`docs/delivery/roadmap.md`).
+
+## App structure
+
+```
+src/
+  index.ts        bootstrap: load config -> buildApp -> listen
+  app.ts          Fastify app factory: error handler, health, module registration
+  config.ts       env config + production safety assertions (NFR-13)
+  lib/
+    problem.ts        RFC 9457 problem+json types + AppError
+    error-handler.ts  pure error -> problem mapping (fully unit-tested)
+    redact.ts         PII redaction for logs/audit (NFR-10/15)
+  modules/
+    <module>/
+      routes.ts       async Fastify plugin (registered by app.ts)
+      <feature>.ts    logic (pure where possible, unit-tested)
+```
+
+**Module-plugin convention (ADR-0011/0017):** each domain module (identity, coach, content, safeguarding, sessions, m&e, admin) is an async Fastify plugin registered by `app.ts`. Business logic is pure and unit-tested; routes are thin. A module that needs config validates it at registration so a bad deploy fails fast at boot (e.g. an empty referral directory, ADR-0010).
+
+## Implemented so far
+
+- **Health**: `GET /health`.
+- **Referral directory** (FR-21): `GET /api/v1/referral-directory?district=` — loaded from the deployment config bundle, **available with no AI/DB dependency** (NFR-06); startup fails if the directory is missing/empty (ADR-0010).
 
 ## Responsibilities (planned modules)
 
@@ -28,8 +52,8 @@ npm run lint && npm run typecheck && npm run build
 - No secrets in source (NFR-13); no PII/P3 in logs (NFR-10/15) — see `src/lib/redact.ts`.
 - API contract is `../docs/architecture/openapi.yaml`; generate types from it in Phase 1.
 
-## To decide in Phase 1
+## Decided / still to decide
 
-- HTTP framework: **NestJS vs Fastify** (ADR-0014) — spike then record in an ADR.
-- DB access layer (e.g. Prisma/Drizzle/Kysely) with pgvector support.
-- OpenAPI → TypeScript type generation.
+- HTTP framework: **Fastify** — resolved in [ADR-0017](../docs/architecture/adr/0017-backend-http-framework.md).
+- DB access layer (e.g. Drizzle/Kysely/Prisma) with pgvector — **next slice** (identity + consent).
+- OpenAPI → TypeScript type generation — to wire alongside the DB slice.

@@ -24,6 +24,7 @@ Status values: `Proposed` · `Accepted` · `Superseded by ADR-nnnn` · `Deprecat
 | [0014](./0014-backend-nodejs.md) | Backend: Node.js (TS); AI service stays Python | Accepted |
 | [0015](./0015-flutter-mobile.md) | Mobile: Flutter | Accepted |
 | [0016](./0016-web-frontend.md) | Web frontend: Next.js + React + TypeScript | Accepted |
+| [0017](./0017-backend-http-framework.md) | Backend HTTP framework: Fastify | Accepted |
 
 ## Template
 

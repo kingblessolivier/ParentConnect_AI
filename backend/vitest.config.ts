@@ -12,7 +12,7 @@ export default defineConfig({
         branches: 70,
         statements: 70,
       },
-      include: ['src/lib/**/*.ts'],
+      include: ['src/**/*.ts'],
       exclude: ['src/**/*.test.ts', 'src/index.ts'],
     },
   },
