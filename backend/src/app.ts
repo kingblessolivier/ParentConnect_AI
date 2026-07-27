@@ -20,6 +20,9 @@ import type {
   OtpRepository,
   ParentRepository,
 } from './modules/identity/repository.js';
+import type { MessageGateway } from './modules/messaging/gateway.js';
+import { nudgeRoutes } from './modules/nudges/routes.js';
+import type { NudgeRepository } from './modules/nudges/repository.js';
 import { safeguardingRoutes } from './modules/safeguarding/routes.js';
 
 export interface AppDeps {
@@ -36,6 +39,12 @@ export interface AppDeps {
   /** Inject a persistent content repository. Defaults to in-memory. */
   content?: {
     contentRepo: ContentRepository;
+  };
+  /** Inject nudge persistence + the shared parent repo + a real gateway. */
+  nudges?: {
+    nudgeRepo: NudgeRepository;
+    parentRepo: ParentRepository;
+    gateway?: MessageGateway;
   };
 }
 
@@ -71,6 +80,7 @@ export async function buildApp(config: AppConfig, deps: AppDeps = {}): Promise<F
   await app.register(identityRoutes, { config, ...(deps.identity ?? {}) });
   await app.register(coachRoutes, { config, ...(deps.coach ?? {}) });
   await app.register(contentRoutes, { config, ...(deps.content ?? {}) });
+  await app.register(nudgeRoutes, { config, ...(deps.nudges ?? {}) });
 
   await app.ready();
   return app;

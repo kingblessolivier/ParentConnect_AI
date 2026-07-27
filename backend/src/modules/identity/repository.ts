@@ -14,6 +14,8 @@ export interface ParentRepository {
   findById(id: string): Promise<ParentProfile | null>;
   findByPhoneHash(phoneHash: string): Promise<ParentProfile | null>;
   update(id: string, patch: Partial<ParentProfile>): Promise<ParentProfile>;
+  /** Parents in a nudge segment: a child in `ageBand` AND `language` preferred. */
+  findBySegment(ageBand: ParentProfile['childBands'][number], language: ParentProfile['preferredLanguage']): Promise<ParentProfile[]>;
 }
 
 export interface ConsentRepository {
@@ -56,6 +58,15 @@ export class InMemoryParentRepository implements ParentRepository {
     const updated = { ...existing, ...patch, id: existing.id, createdAt: existing.createdAt };
     this.byId.set(id, updated);
     return updated;
+  }
+
+  async findBySegment(
+    ageBand: ParentProfile['childBands'][number],
+    language: ParentProfile['preferredLanguage'],
+  ): Promise<ParentProfile[]> {
+    return [...this.byId.values()].filter(
+      (p) => p.preferredLanguage === language && p.childBands.includes(ageBand),
+    );
   }
 }
 

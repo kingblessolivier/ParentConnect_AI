@@ -16,7 +16,12 @@ describe('loadConfig', () => {
   });
 
   it('allows production with debug off and real secrets set', () => {
-    const c = loadConfig({ NODE_ENV: 'production', JWT_SECRET: 's3cret', PHONE_PEPPER: 'p3pper' });
+    const c = loadConfig({
+      NODE_ENV: 'production',
+      JWT_SECRET: 's3cret',
+      PHONE_PEPPER: 'p3pper',
+      PHONE_ENC_KEY: 'ab'.repeat(32),
+    });
     expect(c.nodeEnv).toBe('production');
     expect(c.debug).toBe(false);
   });

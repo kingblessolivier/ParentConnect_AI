@@ -62,7 +62,15 @@ Micro-learning modules (FR-16) with **audio** (FR-19) and a gated **editorial wo
 - **Reviewers/admins** author and drive the workflow: `POST /api/v1/cms/items` (create draft), `POST /api/v1/cms/versions/:id/transition`.
 - The **state machine** (`workflow.ts`) enforces `draft → clinical_review → cultural_review → approved → published → retired` (+ rejection paths), each **role-gated** — only `admin` may publish/retire. **Nothing unapproved is ever served.** Approvers are stamped (clinical/cultural) and `publishedAt` recorded. Postgres-backed (`migrations/0002_content.sql`), tested against `pg-mem`.
 
-Content feedback/ratings (FR-34) and scheduled nudges (FR-17) are the next content slices.
+Content feedback/ratings (FR-34) is a later content slice.
+
+## Nudges & messaging — `modules/nudges`, `modules/messaging`
+
+Scheduled parenting tips (FR-17), segmented by child age band + language, over SMS/push:
+- **Channel gateway** (`messaging/gateway.ts`, ADR-0006/NFR-31): a swappable `MessageGateway` interface (`FakeGateway` for tests, `LogGateway` until an aggregator is arranged — Q5; a real adapter is a later slice).
+- **Outbound reachability:** the phone number is stored **AES-256-encrypted** (`phone_enc`, migration 0003) so server-initiated messages can reach a parent — decrypted only at send time. Config requires a real `PHONE_ENC_KEY` in production (NFR-13).
+- **Admin** (`POST /api/v1/admin/campaigns`, `.../:id/nudges`, `.../nudges/dispatch`): create campaigns, schedule nudges, dispatch due ones. Dispatch resolves the segment (child band + language), **skips opted-out parents**, and sends via the gateway. In production a scheduled worker calls the dispatch service.
+- **Parents** (`POST /api/v1/nudges/opt-out` / `opt-in`, NFR-17).
 
 ## Responsibilities (planned modules)
 

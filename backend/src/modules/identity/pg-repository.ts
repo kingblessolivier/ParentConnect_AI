@@ -19,6 +19,7 @@ import type { Consent, ParentProfile } from './types.js';
 interface ParentRow {
   id: string;
   phone_hash: string;
+  phone_enc: string | null;
   display_alias: string | null;
   district: string | null;
   sector: string | null;
@@ -45,6 +46,7 @@ function mapParent(row: ParentRow): ParentProfile {
     role: row.role,
     createdAt: toIso(row.created_at),
   };
+  if (row.phone_enc != null) p.phoneEnc = row.phone_enc;
   if (row.display_alias != null) p.displayAlias = row.display_alias;
   if (row.district != null) p.district = row.district;
   if (row.sector != null) p.sector = row.sector;
@@ -72,13 +74,14 @@ export class PgParentRepository implements ParentRepository {
     const createdAt = new Date().toISOString();
     const result = await this.db.query<ParentRow>(
       `INSERT INTO parents
-        (id, phone_hash, display_alias, district, sector, urban_rural, caregiver_gender,
+        (id, phone_hash, phone_enc, display_alias, district, sector, urban_rural, caregiver_gender,
          preferred_language, preferred_channel, child_bands, role, created_at)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
        RETURNING *`,
       [
         id,
         profile.phoneHash,
+        profile.phoneEnc ?? null,
         profile.displayAlias ?? null,
         profile.district ?? null,
         profile.sector ?? null,
@@ -127,6 +130,17 @@ export class PgParentRepository implements ParentRepository {
     );
     if (!r.rows[0]) throw new Error(`parent ${id} not found`);
     return mapParent(r.rows[0]);
+  }
+
+  async findBySegment(
+    ageBand: ParentProfile['childBands'][number],
+    language: ParentProfile['preferredLanguage'],
+  ): Promise<ParentProfile[]> {
+    const r = await this.db.query<ParentRow>(
+      'SELECT * FROM parents WHERE preferred_language = $1 AND $2 = ANY(child_bands)',
+      [language, ageBand],
+    );
+    return r.rows.map(mapParent);
   }
 }
 

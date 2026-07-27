@@ -98,9 +98,9 @@ export async function identityRoutes(app: FastifyInstance, opts: IdentityOptions
     if (typeof code !== 'string' || code.trim() === '') {
       throw new AppError(400, 'Invalid input', 'code is required');
     }
-    const { phoneHash } = await otpService.verify(validPhone, code);
+    await otpService.verify(validPhone, code);
     const profileInput = profile === undefined ? {} : validateProfileInput(profile);
-    const parent = await identity.registerVerified(phoneHash, profileInput);
+    const parent = await identity.registerVerified(validPhone, profileInput);
     return identity.issueTokens(parent);
   });
 
