@@ -15,10 +15,14 @@ describe('loadConfig', () => {
     );
   });
 
-  it('allows production with debug off by default', () => {
-    const c = loadConfig({ NODE_ENV: 'production' });
+  it('allows production with debug off and real secrets set', () => {
+    const c = loadConfig({ NODE_ENV: 'production', JWT_SECRET: 's3cret', PHONE_PEPPER: 'p3pper' });
     expect(c.nodeEnv).toBe('production');
     expect(c.debug).toBe(false);
+  });
+
+  it('refuses production on the insecure dev secrets (NFR-13)', () => {
+    expect(() => loadConfig({ NODE_ENV: 'production' })).toThrow(/must be set in production/);
   });
 
   it('rejects an invalid port', () => {

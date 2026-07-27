@@ -7,6 +7,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ## [Unreleased]
 
 ### Added
+- **Backend: identity & consent slice** (`backend/src/modules/identity`) — FR-01/03/04/05/06, NFR-16/17:
+  - Phone + **SMS OTP** auth with rate limiting + lockout (FR-01); OTPs stored hashed, verified in constant time; HS256 session tokens (`lib/crypto.ts`, no third-party dep). Phone numbers stored **hashed** (P2).
+  - **Parent profile** with **age bands only** — validation actively **rejects child-identity fields** (childName/dob/nationalId) (FR-24/NFR-15); anonymity supported (FR-04).
+  - **Assisted onboarding** role-gated to CHW/champion/admin (FR-03) with RBAC enforced at the API (FR-05/NFR-10); **consent** recorded in the user's language + withdrawal (NFR-16/17).
+  - Data access behind **repository interfaces** with in-memory implementations (Postgres drops in next, ADR-0002); config now requires real `JWT_SECRET`/`PHONE_PEPPER` in production (NFR-13). 75 backend tests, ~97% coverage.
 - **Backend foundation (Fastify) + first slice** — Phase 1 begins:
   - **ADR-0017**: resolves the ADR-0014 framework spike → **Fastify** (lean, fast, schema validation, plugin-per-module maps to the modular monolith).
   - `backend/` is now a real app: `config.ts` (env config with a production debug-off safety assertion, NFR-13), `app.ts` (Fastify factory + RFC 9457 `application/problem+json` error handling via a pure, unit-tested `lib/error-handler.ts`), and the module-plugin convention (ADR-0011/0017).
