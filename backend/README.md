@@ -27,6 +27,7 @@ src/
 
 - **Health**: `GET /health`.
 - **Referral directory** (FR-21): `GET /api/v1/referral-directory?district=` — loaded from the deployment config bundle, **available with no AI/DB dependency** (NFR-06); startup fails if the directory is missing/empty (ADR-0010).
+- **Child-protection referral case management** (`modules/safeguarding`, FR-22/23): `POST /api/v1/referrals` raises a **confidential** referral (subject is the adult; category enum; **no child identity ever**, FR-24 — notes are minimal, length-capped, and identity keys are structurally refused). Raisers (`parent`/`chw`/`champion`/`cpo`/`admin`) see their own via `GET /api/v1/referrals/mine`; officers (`cpo`/`admin`) see the full caseload with **overdue flags** (`GET /api/v1/referrals`, `GET /api/v1/referrals/:id`). `POST /api/v1/referrals/:id/transition` advances status **forward-only** `raised→acknowledged→actioned→closed` (FR-23) — each change writes an **append-only audit event** stamped with actor + time (NFR-11). Overdue = past the SLA (`referralSlaHours`, default 48 h) and not closed. Postgres-backed (`migrations/0006_referrals.sql`, `pg-mem`-tested).
 - **Identity & consent** (`modules/identity`):
   - `POST /api/v1/auth/otp/request` · `POST /api/v1/auth/otp/verify` — phone + SMS OTP with rate limiting/lockout (FR-01); OTPs stored hashed; HS256 session tokens.
   - `GET /api/v1/me` · `PATCH /api/v1/me` — profile with **age bands only**; forbidden child-identity fields are rejected (FR-06/24, NFR-15).

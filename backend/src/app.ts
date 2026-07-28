@@ -25,6 +25,7 @@ import type { AssessmentRepository } from './modules/me/repository.js';
 import type { MessageGateway } from './modules/messaging/gateway.js';
 import { nudgeRoutes } from './modules/nudges/routes.js';
 import type { NudgeRepository } from './modules/nudges/repository.js';
+import type { ReferralRepository } from './modules/safeguarding/referral-repository.js';
 import { safeguardingRoutes } from './modules/safeguarding/routes.js';
 import { sessionRoutes } from './modules/sessions/routes.js';
 import type { SessionRepository } from './modules/sessions/repository.js';
@@ -59,6 +60,10 @@ export interface AppDeps {
     assessmentRepo: AssessmentRepository;
     parentRepo: ParentRepository;
   };
+  /** Inject persistent referral case storage. Defaults to in-memory. */
+  safeguarding?: {
+    referralRepo: ReferralRepository;
+  };
 }
 
 export async function buildApp(config: AppConfig, deps: AppDeps = {}): Promise<FastifyInstance> {
@@ -89,7 +94,7 @@ export async function buildApp(config: AppConfig, deps: AppDeps = {}): Promise<F
   app.get('/health', async () => ({ status: 'ok' }));
 
   // Modules (ADR-0011). Each fails fast if its config is invalid.
-  await app.register(safeguardingRoutes, { config });
+  await app.register(safeguardingRoutes, { config, ...(deps.safeguarding ?? {}) });
   await app.register(identityRoutes, { config, ...(deps.identity ?? {}) });
   await app.register(coachRoutes, { config, ...(deps.coach ?? {}) });
   await app.register(contentRoutes, { config, ...(deps.content ?? {}) });
