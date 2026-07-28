@@ -67,6 +67,11 @@ export class PgFeedbackRepository implements FeedbackRepository {
     return r.rows.map(mapRow);
   }
 
+  async listForParent(parentId: string): Promise<Rating[]> {
+    const r = await this.db.query<Row>('SELECT * FROM content_ratings WHERE parent_id = $1', [parentId]);
+    return r.rows.map(mapRow);
+  }
+
   async listAll(): Promise<Rating[]> {
     const r = await this.db.query<Row>('SELECT * FROM content_ratings');
     return r.rows.map(mapRow);

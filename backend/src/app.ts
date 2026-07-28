@@ -17,20 +17,28 @@ import { InMemoryContentRepository, type ContentRepository } from './modules/con
 import { feedbackRoutes } from './modules/feedback/routes.js';
 import type { FeedbackRepository } from './modules/feedback/repository.js';
 import { identityRoutes } from './modules/identity/routes.js';
-import type {
-  ConsentRepository,
-  OtpRepository,
-  ParentRepository,
+import {
+  InMemoryConsentRepository,
+  InMemoryOtpRepository,
+  InMemoryParentRepository,
+  type ConsentRepository,
+  type OtpRepository,
+  type ParentRepository,
 } from './modules/identity/repository.js';
 import { meRoutes } from './modules/me/routes.js';
-import type { AssessmentRepository } from './modules/me/repository.js';
+import { InMemoryAssessmentRepository, type AssessmentRepository } from './modules/me/repository.js';
 import type { MessageGateway } from './modules/messaging/gateway.js';
 import { nudgeRoutes } from './modules/nudges/routes.js';
-import type { NudgeRepository } from './modules/nudges/repository.js';
-import type { ReferralRepository } from './modules/safeguarding/referral-repository.js';
+import { InMemoryNudgeRepository, type NudgeRepository } from './modules/nudges/repository.js';
+import { privacyRoutes } from './modules/privacy/routes.js';
+import {
+  InMemoryReferralRepository,
+  type ReferralRepository,
+} from './modules/safeguarding/referral-repository.js';
 import { safeguardingRoutes } from './modules/safeguarding/routes.js';
 import { sessionRoutes } from './modules/sessions/routes.js';
-import type { SessionRepository } from './modules/sessions/repository.js';
+import { InMemorySessionRepository, type SessionRepository } from './modules/sessions/repository.js';
+import { InMemoryFeedbackRepository } from './modules/feedback/repository.js';
 
 export interface AppDeps {
   /** Inject persistent repositories (e.g. Postgres). Defaults to in-memory. */
@@ -99,19 +107,39 @@ export async function buildApp(config: AppConfig, deps: AppDeps = {}): Promise<F
   // Liveness (not personal data; safe pre-auth).
   app.get('/health', async () => ({ status: 'ok' }));
 
-  // Content and feedback share one content repo so ratings can only target
-  // published modules the content module actually serves (FR-34).
+  // Shared repositories (modular monolith: exactly ONE instance per store, so
+  // every module — and the data-export view, NFR-17 — sees the same data). In
+  // production these all resolve to the injected Postgres repos over one pool.
+  const parentRepo: ParentRepository =
+    deps.identity?.parentRepo ?? deps.me?.parentRepo ?? deps.nudges?.parentRepo ?? new InMemoryParentRepository();
+  const consentRepo: ConsentRepository = deps.identity?.consentRepo ?? new InMemoryConsentRepository();
+  const otpRepo: OtpRepository = deps.identity?.otpRepo ?? new InMemoryOtpRepository();
   const contentRepo: ContentRepository = deps.content?.contentRepo ?? new InMemoryContentRepository();
+  const feedbackRepo = deps.feedback?.feedbackRepo ?? new InMemoryFeedbackRepository();
+  const assessmentRepo: AssessmentRepository = deps.me?.assessmentRepo ?? new InMemoryAssessmentRepository();
+  const referralRepo: ReferralRepository = deps.safeguarding?.referralRepo ?? new InMemoryReferralRepository();
+  const sessionRepo: SessionRepository = deps.sessions?.sessionRepo ?? new InMemorySessionRepository();
+  const nudgeRepo: NudgeRepository = deps.nudges?.nudgeRepo ?? new InMemoryNudgeRepository();
+  const gateway = deps.nudges?.gateway;
 
   // Modules (ADR-0011). Each fails fast if its config is invalid.
-  await app.register(safeguardingRoutes, { config, ...(deps.safeguarding ?? {}) });
-  await app.register(identityRoutes, { config, ...(deps.identity ?? {}) });
+  await app.register(safeguardingRoutes, { config, referralRepo });
+  await app.register(identityRoutes, { config, parentRepo, consentRepo, otpRepo });
   await app.register(coachRoutes, { config, ...(deps.coach ?? {}) });
   await app.register(contentRoutes, { config, contentRepo });
-  await app.register(nudgeRoutes, { config, ...(deps.nudges ?? {}) });
-  await app.register(sessionRoutes, { config, ...(deps.sessions ?? {}) });
-  await app.register(meRoutes, { config, ...(deps.me ?? {}) });
-  await app.register(feedbackRoutes, { config, contentRepo, ...(deps.feedback ?? {}) });
+  await app.register(nudgeRoutes, { config, nudgeRepo, parentRepo, ...(gateway ? { gateway } : {}) });
+  await app.register(sessionRoutes, { config, sessionRepo });
+  await app.register(meRoutes, { config, assessmentRepo, parentRepo });
+  await app.register(feedbackRoutes, { config, contentRepo, feedbackRepo });
+  await app.register(privacyRoutes, {
+    config,
+    parents: parentRepo,
+    consents: consentRepo,
+    assessments: assessmentRepo,
+    feedback: feedbackRepo,
+    referrals: referralRepo,
+    sessions: sessionRepo,
+  });
 
   await app.ready();
   return app;
