@@ -31,6 +31,12 @@ export interface SessionRepository {
   ): Promise<Attendance>;
   listAttendance(sessionId: string): Promise<Attendance[]>;
   listSessionsForParent(parentId: string): Promise<Session[]>;
+  /**
+   * Erase a parent's attendance links (right to be forgotten, NFR-17). Sessions
+   * themselves are programme records and are retained; only the personal link
+   * from a session to this parent is removed.
+   */
+  deleteAttendanceForParent(parentId: string): Promise<void>;
 }
 
 export class InMemorySessionRepository implements SessionRepository {
@@ -77,5 +83,14 @@ export class InMemorySessionRepository implements SessionRepository {
       [...this.attendance.values()].filter((a) => a.parentId === parentId).map((a) => a.sessionId),
     );
     return [...this.sessions.values()].filter((s) => sessionIds.has(s.id));
+  }
+
+  async deleteAttendanceForParent(parentId: string): Promise<void> {
+    for (const [id, record] of this.attendance) {
+      if (record.parentId === parentId) {
+        this.attendance.delete(id);
+        this.byClientId.delete(record.clientId);
+      }
+    }
   }
 }

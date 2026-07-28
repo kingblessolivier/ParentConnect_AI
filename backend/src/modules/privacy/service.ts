@@ -68,4 +68,36 @@ export class DataRightsService {
       sessionsAttended: sessions,
     };
   }
+
+  /**
+   * Erase the caller's account and personal records (right to be forgotten,
+   * NFR-17). Removes the profile, consents, assessments, content ratings, and
+   * session-attendance links.
+   *
+   * Deliberately RETAINED: child-protection referrals the parent raised. They
+   * carry no identity (FR-24) and are kept on a safeguarding/legal basis —
+   * erasing a disclosure of abuse would defeat the safeguarding pathway. The
+   * response states plainly what was removed and what was retained.
+   */
+  async erase(parentId: string): Promise<{ erased: string[]; retained: string[] }> {
+    if (!(await this.deps.parents.findById(parentId))) {
+      throw new AppError(404, 'Not Found', 'no such account');
+    }
+    const retainedReferrals = await this.deps.referrals.listForParent(parentId);
+
+    // Remove dependants before the parent (FK-safe order in Postgres).
+    await this.deps.consents.deleteForParent(parentId);
+    await this.deps.assessments.deleteForParent(parentId);
+    await this.deps.feedback.deleteForParent(parentId);
+    await this.deps.sessions.deleteAttendanceForParent(parentId);
+    await this.deps.parents.delete(parentId);
+
+    return {
+      erased: ['profile', 'consents', 'assessments', 'contentRatings', 'sessionAttendance'],
+      retained:
+        retainedReferrals.length > 0
+          ? [`${retainedReferrals.length} child-protection referral(s) (anonymised; safeguarding basis)`]
+          : [],
+    };
+  }
 }

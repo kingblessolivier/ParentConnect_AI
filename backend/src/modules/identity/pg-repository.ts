@@ -147,6 +147,10 @@ export class PgParentRepository implements ParentRepository {
     const r = await this.db.query<ParentRow>('SELECT * FROM parents');
     return r.rows.map(mapParent);
   }
+
+  async delete(id: string): Promise<void> {
+    await this.db.query('DELETE FROM parents WHERE id = $1', [id]);
+  }
 }
 
 interface ConsentRow {
@@ -198,6 +202,10 @@ export class PgConsentRepository implements ConsentRepository {
       [parentId],
     );
     return r.rows.map(mapConsent);
+  }
+
+  async deleteForParent(parentId: string): Promise<void> {
+    await this.db.query('DELETE FROM consents WHERE parent_id = $1', [parentId]);
   }
 }
 

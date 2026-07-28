@@ -72,6 +72,10 @@ export class PgFeedbackRepository implements FeedbackRepository {
     return r.rows.map(mapRow);
   }
 
+  async deleteForParent(parentId: string): Promise<void> {
+    await this.db.query('DELETE FROM content_ratings WHERE parent_id = $1', [parentId]);
+  }
+
   async listAll(): Promise<Rating[]> {
     const r = await this.db.query<Row>('SELECT * FROM content_ratings');
     return r.rows.map(mapRow);

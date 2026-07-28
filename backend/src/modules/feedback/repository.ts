@@ -12,6 +12,8 @@ export interface FeedbackRepository {
   listForItem(itemId: string): Promise<Rating[]>;
   /** All ratings a parent has left (data-subject export, NFR-17). */
   listForParent(parentId: string): Promise<Rating[]>;
+  /** Erase all of a parent's ratings (right to be forgotten, NFR-17). */
+  deleteForParent(parentId: string): Promise<void>;
   listAll(): Promise<Rating[]>;
 }
 
@@ -56,6 +58,12 @@ export class InMemoryFeedbackRepository implements FeedbackRepository {
 
   async listForParent(parentId: string): Promise<Rating[]> {
     return this.items.filter((r) => r.parentId === parentId);
+  }
+
+  async deleteForParent(parentId: string): Promise<void> {
+    for (let i = this.items.length - 1; i >= 0; i -= 1) {
+      if (this.items[i]!.parentId === parentId) this.items.splice(i, 1);
+    }
   }
 
   async listAll(): Promise<Rating[]> {
