@@ -13,7 +13,9 @@ import { toProblem } from './lib/problem.js';
 import type { AiClient } from './modules/coach/ai-client.js';
 import { coachRoutes } from './modules/coach/routes.js';
 import { contentRoutes } from './modules/content/routes.js';
-import type { ContentRepository } from './modules/content/repository.js';
+import { InMemoryContentRepository, type ContentRepository } from './modules/content/repository.js';
+import { feedbackRoutes } from './modules/feedback/routes.js';
+import type { FeedbackRepository } from './modules/feedback/repository.js';
 import { identityRoutes } from './modules/identity/routes.js';
 import type {
   ConsentRepository,
@@ -64,6 +66,10 @@ export interface AppDeps {
   safeguarding?: {
     referralRepo: ReferralRepository;
   };
+  /** Inject persistent content-feedback storage. Defaults to in-memory. */
+  feedback?: {
+    feedbackRepo: FeedbackRepository;
+  };
 }
 
 export async function buildApp(config: AppConfig, deps: AppDeps = {}): Promise<FastifyInstance> {
@@ -93,14 +99,19 @@ export async function buildApp(config: AppConfig, deps: AppDeps = {}): Promise<F
   // Liveness (not personal data; safe pre-auth).
   app.get('/health', async () => ({ status: 'ok' }));
 
+  // Content and feedback share one content repo so ratings can only target
+  // published modules the content module actually serves (FR-34).
+  const contentRepo: ContentRepository = deps.content?.contentRepo ?? new InMemoryContentRepository();
+
   // Modules (ADR-0011). Each fails fast if its config is invalid.
   await app.register(safeguardingRoutes, { config, ...(deps.safeguarding ?? {}) });
   await app.register(identityRoutes, { config, ...(deps.identity ?? {}) });
   await app.register(coachRoutes, { config, ...(deps.coach ?? {}) });
-  await app.register(contentRoutes, { config, ...(deps.content ?? {}) });
+  await app.register(contentRoutes, { config, contentRepo });
   await app.register(nudgeRoutes, { config, ...(deps.nudges ?? {}) });
   await app.register(sessionRoutes, { config, ...(deps.sessions ?? {}) });
   await app.register(meRoutes, { config, ...(deps.me ?? {}) });
+  await app.register(feedbackRoutes, { config, contentRepo, ...(deps.feedback ?? {}) });
 
   await app.ready();
   return app;

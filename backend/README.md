@@ -81,6 +81,14 @@ CHW/Parent-Champion led sessions (FR-25–28):
 - **Linking (FR-28):** attendance links a session to a parent (never a child); parents see the sessions they attended via `GET /api/v1/me/sessions`.
 - Postgres-backed (`migrations/0004_sessions.sql`, `pg-mem`-tested).
 
+## Content feedback & ratings — `modules/feedback`
+
+In-product feedback on content (FR-34):
+- **Parents** rate a **published** module 1–5 with an optional short comment: `POST /api/v1/content/:itemId/ratings` (upsert — one rating per parent+item) and see their own via `GET /api/v1/content/:itemId/ratings/mine`. A rating can only target content the content module actually serves (published) — the feedback module shares the content repo and **404s** drafts/unknown ids.
+- **Anonymous aggregate** for any authenticated user: `GET /api/v1/content/:itemId/ratings/summary` (count, mean, 1–5 distribution).
+- **Admins** read the cross-content dashboard: `GET /api/v1/admin/content-feedback` (per-item aggregates) and `GET /api/v1/admin/content-feedback/:itemId` (aggregate + comments).
+- **Privacy (NFR-10/15):** ratings carry only the anonymous parent id (never a child); outside a parent's own row only aggregates/comments are exposed. Postgres-backed (`migrations/0007_content_ratings.sql`, `pg-mem`-tested).
+
 ## Monitoring & Evaluation — `modules/me`
 
 Outcome measurement and disaggregated indicators (FR-29–32):
