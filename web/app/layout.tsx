@@ -1,4 +1,6 @@
 import type { ReactNode } from 'react';
+import './globals.css';
+import { Sidebar } from '../components/Sidebar';
 
 export const metadata = {
   title: 'ParentConnect AI — Staff Console',
@@ -8,7 +10,12 @@ export const metadata = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <div className="layout">
+          <Sidebar />
+          <main className="main">{children}</main>
+        </div>
+      </body>
     </html>
   );
 }
