@@ -112,4 +112,8 @@ export class PgSessionRepository implements SessionRepository {
     );
     return r.rows.map(mapSession);
   }
+
+  async deleteAttendanceForParent(parentId: string): Promise<void> {
+    await this.db.query('DELETE FROM session_attendance WHERE parent_id = $1', [parentId]);
+  }
 }

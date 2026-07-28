@@ -56,4 +56,8 @@ export class PgAssessmentRepository implements AssessmentRepository {
     const r = await this.db.query<Row>('SELECT * FROM assessments');
     return r.rows.map(mapRow);
   }
+
+  async deleteForParent(parentId: string): Promise<void> {
+    await this.db.query('DELETE FROM assessments WHERE parent_id = $1', [parentId]);
+  }
 }

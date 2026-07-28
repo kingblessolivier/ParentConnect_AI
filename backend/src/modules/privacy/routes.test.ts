@@ -73,4 +73,13 @@ describe('data-subject rights routes (NFR-17)', () => {
     expect(body.assessments).toHaveLength(1); // the write above is visible
     expect(body.assessments[0].scores.knowledge).toBe(40);
   });
+
+  it('erases the account, after which the export 404s', async () => {
+    const del = await app.inject({ method: 'DELETE', url: '/api/v1/me', headers: bearer(token) });
+    expect(del.statusCode).toBe(200);
+    expect(del.json().erased).toContain('profile');
+
+    const after = await app.inject({ url: '/api/v1/me/data-export', headers: bearer(token) });
+    expect(after.statusCode).toBe(404);
+  });
 });

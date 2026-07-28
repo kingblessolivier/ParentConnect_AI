@@ -18,12 +18,16 @@ export interface ParentRepository {
   findBySegment(ageBand: ParentProfile['childBands'][number], language: ParentProfile['preferredLanguage']): Promise<ParentProfile[]>;
   /** All parents (for aggregate M&E indicators, FR-30/31). */
   listAll(): Promise<ParentProfile[]>;
+  /** Erase a parent account (right to be forgotten, NFR-17). No-op if absent. */
+  delete(id: string): Promise<void>;
 }
 
 export interface ConsentRepository {
   record(consent: Omit<Consent, 'id'>): Promise<Consent>;
   withdraw(parentId: string, purpose: string, at: string): Promise<void>;
   listForParent(parentId: string): Promise<Consent[]>;
+  /** Erase all of a parent's consent records (right to be forgotten, NFR-17). */
+  deleteForParent(parentId: string): Promise<void>;
 }
 
 export interface OtpRecord {
@@ -74,6 +78,10 @@ export class InMemoryParentRepository implements ParentRepository {
   async listAll(): Promise<ParentProfile[]> {
     return [...this.byId.values()];
   }
+
+  async delete(id: string): Promise<void> {
+    this.byId.delete(id);
+  }
 }
 
 export class InMemoryConsentRepository implements ConsentRepository {
@@ -91,6 +99,12 @@ export class InMemoryConsentRepository implements ConsentRepository {
   }
   async listForParent(parentId: string): Promise<Consent[]> {
     return this.items.filter((c) => c.parentId === parentId);
+  }
+
+  async deleteForParent(parentId: string): Promise<void> {
+    for (let i = this.items.length - 1; i >= 0; i -= 1) {
+      if (this.items[i]!.parentId === parentId) this.items.splice(i, 1);
+    }
   }
 }
 

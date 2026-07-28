@@ -10,6 +10,8 @@ export interface AssessmentRepository {
   upsert(parentId: string, type: AssessmentType, scores: AssessmentScores): Promise<AssessmentResult>;
   listForParent(parentId: string): Promise<AssessmentResult[]>;
   listAll(): Promise<AssessmentResult[]>;
+  /** Erase a parent's assessments (right to be forgotten, NFR-17). */
+  deleteForParent(parentId: string): Promise<void>;
 }
 
 export class InMemoryAssessmentRepository implements AssessmentRepository {
@@ -43,5 +45,11 @@ export class InMemoryAssessmentRepository implements AssessmentRepository {
 
   async listAll(): Promise<AssessmentResult[]> {
     return [...this.items];
+  }
+
+  async deleteForParent(parentId: string): Promise<void> {
+    for (let i = this.items.length - 1; i >= 0; i -= 1) {
+      if (this.items[i]!.parentId === parentId) this.items.splice(i, 1);
+    }
   }
 }

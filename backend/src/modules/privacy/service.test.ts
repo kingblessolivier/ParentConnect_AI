@@ -96,3 +96,72 @@ describe('DataRightsService.export', () => {
     expect(out.assessments).toHaveLength(0);
   });
 });
+
+describe('DataRightsService.erase', () => {
+  it('404s when the account does not exist', async () => {
+    await expect(new DataRightsService(deps()).erase('ghost')).rejects.toMatchObject({
+      statusCode: 404,
+    });
+  });
+
+  it('removes the profile + personal records but retains anonymised referrals', async () => {
+    const d = deps();
+    const parent = await d.parents.create({
+      phoneHash: 'h',
+      role: 'parent',
+      preferredLanguage: 'rw',
+      preferredChannel: 'sms',
+      childBands: ['13_15'],
+    });
+    await d.consents.record({
+      parentId: parent.id,
+      purpose: 'coach',
+      language: 'rw',
+      method: 'app',
+      givenAt: '2026-07-28T00:00:00Z',
+    });
+    await d.assessments.upsert(parent.id, 'baseline', { knowledge: 1, confidence: 1, communication: 1 });
+    await d.feedback.upsert('item-1', parent.id, 5, undefined, '2026-07-28T00:00:00Z');
+    const session = await d.sessions.createSession({
+      facilitatorId: 'chw-1',
+      district: 'Gasabo',
+      sector: 'Remera',
+      topic: 'communication',
+      scheduledAt: '2026-08-01T09:00:00Z',
+    });
+    await d.sessions.recordAttendance(session.id, parent.id, 'client-1', '2026-08-01T09:05:00Z');
+    await d.referrals.create({
+      raisedByParentId: parent.id,
+      category: 'abuse',
+      createdAt: '2026-07-28T00:00:00Z',
+      dueBy: '2026-07-30T00:00:00Z',
+    });
+
+    const result = await new DataRightsService(d).erase(parent.id);
+    expect(result.erased).toContain('profile');
+    expect(result.retained[0]).toContain('referral');
+
+    // Everything personal is gone…
+    expect(await d.parents.findById(parent.id)).toBeNull();
+    expect(await d.consents.listForParent(parent.id)).toHaveLength(0);
+    expect(await d.assessments.listForParent(parent.id)).toHaveLength(0);
+    expect(await d.feedback.listForParent(parent.id)).toHaveLength(0);
+    expect(await d.sessions.listSessionsForParent(parent.id)).toHaveLength(0);
+    // …but the session itself and the anonymised referral remain.
+    expect(await d.sessions.getSession(session.id)).not.toBeNull();
+    expect(await d.referrals.listForParent(parent.id)).toHaveLength(1);
+  });
+
+  it('reports no retained referrals when the parent raised none', async () => {
+    const d = deps();
+    const parent = await d.parents.create({
+      phoneHash: 'h',
+      role: 'parent',
+      preferredLanguage: 'rw',
+      preferredChannel: 'sms',
+      childBands: ['13_15'],
+    });
+    const result = await new DataRightsService(d).erase(parent.id);
+    expect(result.retained).toHaveLength(0);
+  });
+});
