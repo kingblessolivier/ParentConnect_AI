@@ -20,6 +20,8 @@ import type {
   OtpRepository,
   ParentRepository,
 } from './modules/identity/repository.js';
+import { meRoutes } from './modules/me/routes.js';
+import type { AssessmentRepository } from './modules/me/repository.js';
 import type { MessageGateway } from './modules/messaging/gateway.js';
 import { nudgeRoutes } from './modules/nudges/routes.js';
 import type { NudgeRepository } from './modules/nudges/repository.js';
@@ -51,6 +53,11 @@ export interface AppDeps {
   /** Inject a persistent session repository. Defaults to in-memory. */
   sessions?: {
     sessionRepo: SessionRepository;
+  };
+  /** Inject M&E persistence + the shared parent repo (for aggregates). */
+  me?: {
+    assessmentRepo: AssessmentRepository;
+    parentRepo: ParentRepository;
   };
 }
 
@@ -88,6 +95,7 @@ export async function buildApp(config: AppConfig, deps: AppDeps = {}): Promise<F
   await app.register(contentRoutes, { config, ...(deps.content ?? {}) });
   await app.register(nudgeRoutes, { config, ...(deps.nudges ?? {}) });
   await app.register(sessionRoutes, { config, ...(deps.sessions ?? {}) });
+  await app.register(meRoutes, { config, ...(deps.me ?? {}) });
 
   await app.ready();
   return app;
