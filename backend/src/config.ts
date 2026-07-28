@@ -33,6 +33,8 @@ export interface AppConfig {
   readonly accessTtlSeconds: number;
   /** Refresh-token lifetime. */
   readonly refreshTtlSeconds: number;
+  /** Child-protection referral SLA in hours: due_by = created_at + this (FR-23, D2). */
+  readonly referralSlaHours: number;
 }
 
 const DEV_JWT_SECRET = 'dev-insecure-jwt-secret';
@@ -97,5 +99,6 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     otpMaxAttempts: Number(env.OTP_MAX_ATTEMPTS ?? 3),
     accessTtlSeconds: Number(env.ACCESS_TTL_SECONDS ?? 900),
     refreshTtlSeconds: Number(env.REFRESH_TTL_SECONDS ?? 60 * 60 * 24 * 30),
+    referralSlaHours: Number(env.REFERRAL_SLA_HOURS ?? 48),
   };
 }

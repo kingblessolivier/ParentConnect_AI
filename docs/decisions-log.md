@@ -56,6 +56,7 @@ A running log of open questions, assumptions taken, and how they were resolved. 
 
 | Date | Change |
 |---|---|
+| 2026-07-28 | **[ASSUMPTION]** Child-protection referral SLA default set to **48 h** (`config.referralSlaHours`, `due_by = created_at + SLA`; overdue = past `due_by` and not `closed`). Configurable per deployment; a real SLA (possibly per-category) needs sign-off from the child-protection lead (relates to D2, FR-23). Implemented in `backend/src/modules/safeguarding` (referral case management, FR-22/23). |
 | 2026-07-18 | Web research on Kinyarwanda embedding/NLP options (V4 partially verified, V8 added): confirmed public assets from Digital Umuganda, Mbaza NLP, and Common Voice, and discovered KinyaBERT/KinyaColBERT (DeepKIN) as an existing Kinyarwanda-specific retrieval model. Updated `kinyarwanda-strategy.md`'s embedding-model and partner tables with sourced citations. Partnership/licensing conversations remain open. |
 | 2026-07-14 | Initial documentation baseline created; kickoff blocking questions logged; proceeding on stated assumptions per sponsor instruction. |
 | 2026-07-14 | Tech stack changed by sponsor: Node.js backend, Flutter mobile, Next.js/React web; AI/RAG service stays Python. ADR-0001 & 0013 superseded by ADR-0014/0015/0016. Flutter APK-size risk (NFR-28) flagged. |
