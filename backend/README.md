@@ -93,7 +93,7 @@ In-product feedback on content (FR-34):
 
 Outcome measurement and disaggregated indicators (FR-29–32):
 - **Parents** submit non-identifying self-assessments (`knowledge`/`confidence`/`communication`, each 0–100) at **baseline** and **follow-up**: `POST /api/v1/assessments/:type` (upsert — one row per parent+type). `GET /api/v1/assessments/mine` returns their own results and computed **change** (FR-29).
-- **Admins** read anonymised, disaggregated **indicators**: `GET /api/v1/dashboards/indicators?by=district|sector|urbanRural|caregiverGender|channel` — reach plus mean baseline→follow-up change per bucket (FR-30/31). `GET /api/v1/export/indicators.csv?by=` exports the same as CSV (FR-32).
+- **Admins** read a consolidated **overview** — reach, active-by-channel/language, assessment completion, and overall mean change (`GET /api/v1/dashboards/overview`, FR-30) — plus anonymised, disaggregated **indicators**: `GET /api/v1/dashboards/indicators?by=district|sector|urbanRural|caregiverGender|channel` — reach plus mean baseline→follow-up change per bucket (FR-30/31). `GET /api/v1/export/indicators.csv?by=` exports the same as CSV (FR-32).
 - **Privacy (NFR-10/19):** dashboards and exports return **only aggregates** — no individual result ever leaves via them; the indicator engine (`indicators.ts`) is pure, PII-free, and unit-tested. Parents with an incomplete pair count toward reach but contribute `null` (not zero) to change means.
 - Postgres-backed (`migrations/0005_assessments.sql`, `pg-mem`-tested); no child-identity columns (FR-24/NFR-15).
 
