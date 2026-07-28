@@ -10,6 +10,8 @@ export interface FeedbackRepository {
   upsert(itemId: string, parentId: string, stars: number, comment: string | undefined, at: string): Promise<Rating>;
   getForParent(itemId: string, parentId: string): Promise<Rating | null>;
   listForItem(itemId: string): Promise<Rating[]>;
+  /** All ratings a parent has left (data-subject export, NFR-17). */
+  listForParent(parentId: string): Promise<Rating[]>;
   listAll(): Promise<Rating[]>;
 }
 
@@ -50,6 +52,10 @@ export class InMemoryFeedbackRepository implements FeedbackRepository {
 
   async listForItem(itemId: string): Promise<Rating[]> {
     return this.items.filter((r) => r.itemId === itemId);
+  }
+
+  async listForParent(parentId: string): Promise<Rating[]> {
+    return this.items.filter((r) => r.parentId === parentId);
   }
 
   async listAll(): Promise<Rating[]> {
