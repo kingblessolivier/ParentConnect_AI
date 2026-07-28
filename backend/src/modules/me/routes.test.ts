@@ -119,6 +119,26 @@ describe('M&E routes', () => {
     expect(gasabo.knowledgeChange).toBe(25);
   });
 
+  it('an admin reads the consolidated overview', async () => {
+    const res = await app.inject({
+      url: '/api/v1/dashboards/overview',
+      headers: bearer(adminToken),
+    });
+    expect(res.statusCode).toBe(200);
+    expect(res.json().totalParents).toBe(2);
+    expect(res.json().activeByChannel).toEqual({ sms: 2 });
+    expect(res.json().assessments.completedPairs).toBe(2);
+    expect(res.json().meanChange.knowledge).toBe(25);
+  });
+
+  it('a parent cannot read the overview (403)', async () => {
+    const res = await app.inject({
+      url: '/api/v1/dashboards/overview',
+      headers: bearer(parentToken),
+    });
+    expect(res.statusCode).toBe(403);
+  });
+
   it('a parent cannot read the indicators dashboard (403)', async () => {
     const res = await app.inject({
       url: '/api/v1/dashboards/indicators',

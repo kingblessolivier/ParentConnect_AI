@@ -39,6 +39,12 @@ export async function meRoutes(app: FastifyInstance, opts: MeOptions): Promise<v
     return service.parentReport(ctx.parentId);
   });
 
+  app.get('/api/v1/dashboards/overview', async (request) => {
+    const ctx = authenticate(request, opts.config.jwtSecret);
+    requireRole(ctx, ['admin']);
+    return service.overview();
+  });
+
   app.get('/api/v1/dashboards/indicators', async (request) => {
     const ctx = authenticate(request, opts.config.jwtSecret);
     requireRole(ctx, ['admin']);

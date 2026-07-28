@@ -7,6 +7,7 @@ import { AppError } from '../../lib/problem.js';
 import type { ParentRepository } from '../identity/repository.js';
 import type { ParentProfile } from '../identity/types.js';
 import { computeIndicators, deltaFor, indicatorsToCsv } from './indicators.js';
+import { computeOverview, type Overview } from './overview.js';
 import type { AssessmentRepository } from './repository.js';
 import type {
   AssessmentDelta,
@@ -87,5 +88,14 @@ export class MeService {
 
   async indicatorsCsv(dimension: Dimension): Promise<string> {
     return indicatorsToCsv(dimension, await this.indicators(dimension));
+  }
+
+  /** Consolidated headline indicators for the admin overview (FR-30). */
+  async overview(): Promise<Overview> {
+    const [parents, results] = await Promise.all([
+      this.parents.listAll(),
+      this.assessments.listAll(),
+    ]);
+    return computeOverview(parents.map(toDims), results);
   }
 }
