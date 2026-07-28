@@ -10,6 +10,7 @@ import { loadConfig } from './config.js';
 import { createPool } from './lib/db.js';
 import { runMigrations } from './lib/migrate.js';
 import { PgContentRepository } from './modules/content/pg-repository.js';
+import { PgFeedbackRepository } from './modules/feedback/pg-repository.js';
 import {
   PgConsentRepository,
   PgOtpRepository,
@@ -41,6 +42,7 @@ async function main(): Promise<void> {
     deps.sessions = { sessionRepo: new PgSessionRepository(pool) };
     deps.me = { assessmentRepo: new PgAssessmentRepository(pool), parentRepo };
     deps.safeguarding = { referralRepo: new PgReferralRepository(pool) };
+    deps.feedback = { feedbackRepo: new PgFeedbackRepository(pool) };
   }
 
   const app = await buildApp(config, deps);
