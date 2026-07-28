@@ -16,6 +16,8 @@ export interface ParentRepository {
   update(id: string, patch: Partial<ParentProfile>): Promise<ParentProfile>;
   /** Parents in a nudge segment: a child in `ageBand` AND `language` preferred. */
   findBySegment(ageBand: ParentProfile['childBands'][number], language: ParentProfile['preferredLanguage']): Promise<ParentProfile[]>;
+  /** All parents (for aggregate M&E indicators, FR-30/31). */
+  listAll(): Promise<ParentProfile[]>;
 }
 
 export interface ConsentRepository {
@@ -67,6 +69,10 @@ export class InMemoryParentRepository implements ParentRepository {
     return [...this.byId.values()].filter(
       (p) => p.preferredLanguage === language && p.childBands.includes(ageBand),
     );
+  }
+
+  async listAll(): Promise<ParentProfile[]> {
+    return [...this.byId.values()];
   }
 }
 

@@ -17,6 +17,7 @@ import {
 } from './modules/identity/pg-repository.js';
 import { LogGateway } from './modules/messaging/gateway.js';
 import { PgNudgeRepository } from './modules/nudges/pg-repository.js';
+import { PgAssessmentRepository } from './modules/me/pg-repository.js';
 import { PgSessionRepository } from './modules/sessions/pg-repository.js';
 
 async function main(): Promise<void> {
@@ -37,6 +38,7 @@ async function main(): Promise<void> {
     // aggregator is arranged (Q5, ADR-0006).
     deps.nudges = { nudgeRepo: new PgNudgeRepository(pool), parentRepo, gateway: new LogGateway() };
     deps.sessions = { sessionRepo: new PgSessionRepository(pool) };
+    deps.me = { assessmentRepo: new PgAssessmentRepository(pool), parentRepo };
   }
 
   const app = await buildApp(config, deps);

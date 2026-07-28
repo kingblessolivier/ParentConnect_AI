@@ -142,6 +142,11 @@ export class PgParentRepository implements ParentRepository {
     );
     return r.rows.map(mapParent);
   }
+
+  async listAll(): Promise<ParentProfile[]> {
+    const r = await this.db.query<ParentRow>('SELECT * FROM parents');
+    return r.rows.map(mapParent);
+  }
 }
 
 interface ConsentRow {
