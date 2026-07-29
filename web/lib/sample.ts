@@ -4,7 +4,7 @@
  * in the UI. NONE of this is real: synthetic ids, no identity of any kind.
  */
 
-import type { Overview, RatingSummary, ReferralView } from './types';
+import type { Overview, RatingSummary, ReferralView, ReviewItem } from './types';
 
 export const SAMPLE_OVERVIEW: Overview = {
   totalParents: 1284,
@@ -23,6 +23,13 @@ export const SAMPLE_REFERRALS: ReferralView[] = [
   { id: 'r-1036', raisedByParentId: 'anon-7710', category: 'pregnancy', status: 'actioned', assignedOfficerId: 'cpo-1', createdAt: iso(-52), dueBy: iso(-4), updatedAt: iso(-10), overdue: true },
   { id: 'r-1030', raisedByParentId: 'anon-3390', category: 'exploitation', status: 'closed', assignedOfficerId: 'cpo-1', createdAt: iso(-120), dueBy: iso(-72), updatedAt: iso(-60), overdue: false },
   { id: 'r-1028', raisedByParentId: 'anon-9004', category: 'other', status: 'acknowledged', assignedOfficerId: 'cpo-2', createdAt: iso(-14), dueBy: iso(34), updatedAt: iso(-8), overdue: false },
+];
+
+export const SAMPLE_REVIEW: ReviewItem[] = [
+  { versionId: 'v-2201', itemId: 'i-2201', version: 1, status: 'clinical_review', topic: 'srh', ageBand: '16_19', language: 'rw', title: 'Understanding menstruation', createdAt: iso(-40) },
+  { versionId: 'v-2198', itemId: 'i-2198', version: 2, status: 'cultural_review', topic: 'consent', ageBand: '13_15', language: 'rw', title: 'Talking about boundaries', clinicalApprovedBy: 'reviewer-3', createdAt: iso(-64) },
+  { versionId: 'v-2190', itemId: 'i-2190', version: 1, status: 'approved', topic: 'relationships', ageBand: 'all', language: 'en', title: 'Healthy relationships 101', clinicalApprovedBy: 'reviewer-3', culturalApprovedBy: 'reviewer-5', createdAt: iso(-88) },
+  { versionId: 'v-2185', itemId: 'i-2185', version: 1, status: 'draft', topic: 'myths', ageBand: '13_15', language: 'rw', title: 'Common myths, answered', createdAt: iso(-12) },
 ];
 
 export const SAMPLE_FEEDBACK: (RatingSummary & { title: string })[] = [

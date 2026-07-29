@@ -61,7 +61,7 @@ The AI client is injectable (`AppDeps.coach.aiClient`) for tests; message persis
 
 Micro-learning modules (FR-16) with **audio** (FR-19) and a gated **editorial workflow** (FR-20):
 - **Parents** read only **published** modules: `GET /api/v1/content?topic=&ageBand=&language=` and `GET /api/v1/content/:itemId`.
-- **Reviewers/admins** author and drive the workflow: `POST /api/v1/cms/items` (create draft), `POST /api/v1/cms/versions/:id/transition`.
+- **Reviewers/admins** author and drive the workflow: `POST /api/v1/cms/items` (create draft), `POST /api/v1/cms/versions/:id/transition`, and `GET /api/v1/cms/items?status=` (the **review queue** — versions awaiting a decision, joined with item metadata + approver stamps).
 - The **state machine** (`workflow.ts`) enforces `draft → clinical_review → cultural_review → approved → published → retired` (+ rejection paths), each **role-gated** — only `admin` may publish/retire. **Nothing unapproved is ever served.** Approvers are stamped (clinical/cultural) and `publishedAt` recorded. Postgres-backed (`migrations/0002_content.sql`), tested against `pg-mem`.
 
 Content feedback/ratings (FR-34) is a later content slice.

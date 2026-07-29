@@ -9,6 +9,7 @@ import type {
   ContentRepository,
   CreateItemInput,
   PublishedFilter,
+  ReviewItem,
 } from './repository.js';
 import type { ContentStatus, ContentVersion, PublishedModule } from './types.js';
 import { assertCanTransition } from './workflow.js';
@@ -54,5 +55,16 @@ export class ContentService {
     const module = await this.repo.getPublishedModule(itemId);
     if (!module) throw new AppError(404, 'Not Found', 'no published module for this item');
     return module;
+  }
+
+  /**
+   * The review queue for staff (FR-20). Defaults to items awaiting a decision
+   * (in review or approved-but-unpublished); pass explicit statuses to filter.
+   */
+  async reviewQueue(statuses?: readonly ContentStatus[]): Promise<ReviewItem[]> {
+    const wanted = statuses && statuses.length > 0
+      ? statuses
+      : (['draft', 'clinical_review', 'cultural_review', 'approved'] as ContentStatus[]);
+    return this.repo.listByStatus(wanted);
   }
 }

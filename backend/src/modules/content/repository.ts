@@ -29,12 +29,29 @@ export interface PublishedFilter {
   language?: Language;
 }
 
+/** A content version joined with its item's metadata (review queue, FR-20). */
+export interface ReviewItem {
+  versionId: string;
+  itemId: string;
+  version: number;
+  status: ContentStatus;
+  topic: ContentTopic;
+  ageBand: AgeBand | 'all';
+  language: Language;
+  title: string;
+  clinicalApprovedBy?: string;
+  culturalApprovedBy?: string;
+  createdAt: string;
+}
+
 export interface ContentRepository {
   createItemWithDraft(input: CreateItemInput): Promise<{ item: ContentItem; version: ContentVersion }>;
   getVersion(versionId: string): Promise<ContentVersion | null>;
   saveVersion(version: ContentVersion): Promise<ContentVersion>;
   listPublished(filter: PublishedFilter): Promise<PublishedModule[]>;
   getPublishedModule(itemId: string): Promise<PublishedModule | null>;
+  /** Versions in the given workflow states, joined with item metadata (FR-20). */
+  listByStatus(statuses: readonly ContentStatus[]): Promise<ReviewItem[]>;
 }
 
 function toModule(item: ContentItem, version: ContentVersion): PublishedModule {
@@ -111,6 +128,30 @@ export class InMemoryContentRepository implements ContentRepository {
       if (version.itemId === itemId && version.status === 'published') return toModule(item, version);
     }
     return null;
+  }
+
+  async listByStatus(statuses: readonly ContentStatus[]): Promise<ReviewItem[]> {
+    const want = new Set(statuses);
+    const out: ReviewItem[] = [];
+    for (const version of this.versions.values()) {
+      if (!want.has(version.status)) continue;
+      const item = this.items.get(version.itemId);
+      if (!item) continue;
+      out.push({
+        versionId: version.id,
+        itemId: item.id,
+        version: version.version,
+        status: version.status,
+        topic: item.topic,
+        ageBand: item.ageBand,
+        language: item.language,
+        title: version.title,
+        ...(version.clinicalApprovedBy ? { clinicalApprovedBy: version.clinicalApprovedBy } : {}),
+        ...(version.culturalApprovedBy ? { culturalApprovedBy: version.culturalApprovedBy } : {}),
+        createdAt: version.createdAt,
+      });
+    }
+    return out.sort((a, b) => a.createdAt.localeCompare(b.createdAt));
   }
 }
 

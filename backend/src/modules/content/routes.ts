@@ -16,6 +16,7 @@ import {
   type CreateItemInput,
   type PublishedFilter,
 } from './repository.js';
+import type { ContentStatus } from './types.js';
 import { ContentService } from './service.js';
 import { CONTENT_TOPICS, type ContentTopic } from './types.js';
 
@@ -94,6 +95,19 @@ export async function contentRoutes(app: FastifyInstance, opts: ContentOptions):
   });
 
   // --- CMS: authoring + approval workflow (FR-20) ---
+
+  // Review queue for reviewers/admins: items awaiting a decision (FR-20).
+  // `?status=clinical_review,cultural_review` narrows it; default = all pending.
+  app.get('/api/v1/cms/items', async (request) => {
+    const ctx = authenticate(request, opts.config.jwtSecret);
+    requireRole(ctx, AUTHOR_ROLES);
+    const raw = (request.query as { status?: string }).status;
+    const statuses = (raw ? raw.split(',') : [])
+      .map((s) => s.trim())
+      .filter((s): s is ContentStatus => isContentStatus(s));
+    return service.reviewQueue(statuses);
+  });
+
   app.post('/api/v1/cms/items', async (request, reply) => {
     const ctx = authenticate(request, opts.config.jwtSecret);
     requireRole(ctx, AUTHOR_ROLES);

@@ -94,6 +94,37 @@ describe('content routes', () => {
     expect(listed.json()[0].audioUri).toBe('s3://audio/1.mp3');
   });
 
+  it('review queue lists items awaiting a decision, gated to staff (FR-20)', async () => {
+    // author a fresh draft that stays in the queue
+    const created = await app.inject({
+      method: 'POST',
+      url: '/api/v1/cms/items',
+      headers: bearer(reviewer),
+      payload: { ...DRAFT, title: 'Queue me' },
+    });
+    const versionId = created.json().id as string;
+    await app.inject({
+      method: 'POST',
+      url: `/api/v1/cms/versions/${versionId}/transition`,
+      headers: bearer(reviewer),
+      payload: { to: 'clinical_review' },
+    });
+
+    // a parent may not see the review queue
+    const forbidden = await app.inject({ url: '/api/v1/cms/items', headers: bearer(parent) });
+    expect(forbidden.statusCode).toBe(403);
+
+    // a reviewer sees the queued item, filterable by status
+    const queue = await app.inject({
+      url: '/api/v1/cms/items?status=clinical_review',
+      headers: bearer(reviewer),
+    });
+    expect(queue.statusCode).toBe(200);
+    const mine = queue.json().find((r: { versionId: string }) => r.versionId === versionId);
+    expect(mine.status).toBe('clinical_review');
+    expect(mine.title).toBe('Queue me');
+  });
+
   it('rejects an illegal transition (400)', async () => {
     const created = await app.inject({
       method: 'POST',

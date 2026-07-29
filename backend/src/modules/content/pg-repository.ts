@@ -10,6 +10,7 @@ import type {
   ContentRepository,
   CreateItemInput,
   PublishedFilter,
+  ReviewItem,
 } from './repository.js';
 import type {
   ContentItem,
@@ -178,5 +179,30 @@ export class PgContentRepository implements ContentRepository {
       { id: itemId, topic: row.topic, age_band: row.age_band, language: row.language, created_at: row.created_at },
       row,
     );
+  }
+
+  async listByStatus(statuses: readonly ContentStatus[]): Promise<ReviewItem[]> {
+    if (statuses.length === 0) return [];
+    const where = statuses.map((_, i) => `v.status = $${i + 1}`).join(' OR ');
+    const rows = await this.db.query<ItemRow & VersionRow>(
+      `SELECT i.topic, i.age_band, i.language, v.*
+         FROM content_versions v JOIN content_items i ON i.id = v.item_id
+        WHERE ${where}
+        ORDER BY v.created_at ASC`,
+      [...statuses],
+    );
+    return rows.rows.map((row) => ({
+      versionId: row.id,
+      itemId: row.item_id,
+      version: row.version,
+      status: row.status,
+      topic: row.topic,
+      ageBand: row.age_band,
+      language: row.language,
+      title: row.title,
+      ...(row.clinical_approved_by != null ? { clinicalApprovedBy: row.clinical_approved_by } : {}),
+      ...(row.cultural_approved_by != null ? { culturalApprovedBy: row.cultural_approved_by } : {}),
+      createdAt: iso(row.created_at),
+    }));
   }
 }

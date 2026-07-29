@@ -41,3 +41,25 @@ export interface RatingSummary {
   average: number | null;
   distribution: Record<number, number>;
 }
+
+export type ContentStatus =
+  | 'draft'
+  | 'clinical_review'
+  | 'cultural_review'
+  | 'approved'
+  | 'published'
+  | 'retired';
+
+export interface ReviewItem {
+  versionId: string;
+  itemId: string;
+  version: number;
+  status: ContentStatus;
+  topic: string;
+  ageBand: string;
+  language: string;
+  title: string;
+  clinicalApprovedBy?: string;
+  culturalApprovedBy?: string;
+  createdAt: string;
+}

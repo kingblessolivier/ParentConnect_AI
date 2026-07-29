@@ -76,8 +76,8 @@ This tracks **code**, not programme/ops milestones. "Built & tested" means merge
 
 ## The big remaining gaps (by size)
 
-1. **Web staff console** (`web/`, Next.js) — **scaffold only (~7 files).** The backend exposes admin/clinical/CPO APIs (content approval, referral triage, dashboards, campaigns, feedback) with **no UI**. This is the largest single gap for staff to actually use the system.
-2. **Mobile parent app** (`mobile/`, Flutter) — **scaffold only (~5 files).** Coach chat, content reading, audio, nudges opt-in, offline pack. Second-largest gap; NFR-28 APK-size risk to validate early.
+1. **Web staff console** (`web/`, Next.js) — **started.** Three working pages now: M&E dashboard, child-protection referral triage (with status transitions), and content-feedback dashboard (typed API client + demo fallback, theme-aware). **Still to build:** admin (users/roles/campaigns), the clinical/cultural **content-review** console driving the FR-20 workflow, and i18n.
+2. **Mobile parent app** (`mobile/`, Flutter) — **scaffold only (~5 files).** Coach chat, content reading, audio, nudges opt-in, offline pack. Now the largest single gap; NFR-28 APK-size risk to validate early. The coach surface depends on AI generation (#3).
 3. **AI generation not wired** — the RAG pipeline is built but the `Generator` seam returns "I don't know" until an LLM + approved corpus are configured. **Blocked on Q2 (model/residency) and Q3 (corpus).** This is the Phase-0 safety gate, deliberately sequenced.
 4. **Smaller, self-contained backend items still open:** FR-33 staff user/role management + editable referral directory; FR-12 role-play (needs #3); NFR-11 system-wide audit log; NFR-19 retention job; FR-32 DHIS2 export (needs schema, Q8).
 
