@@ -76,11 +76,20 @@ This tracks **code**, not programme/ops milestones. "Built & tested" means merge
 
 ## The big remaining gaps (by size)
 
-1. **Web staff console** (`web/`, Next.js) — **started.** Three working pages now: M&E dashboard, child-protection referral triage (with status transitions), and content-feedback dashboard (typed API client + demo fallback, theme-aware). **Still to build:** admin (users/roles/campaigns), the clinical/cultural **content-review** console driving the FR-20 workflow, and i18n.
-2. **Mobile parent app** (`mobile/`, Flutter) — **scaffold only (~5 files).** Coach chat, content reading, audio, nudges opt-in, offline pack. Now the largest single gap; NFR-28 APK-size risk to validate early. The coach surface depends on AI generation (#3).
+1. **Web staff console** (`web/`, Next.js) — **four working pages.** M&E dashboard, child-protection referral triage (with status transitions), **content-review** console (FR-20 approval workflow), and content-feedback dashboard — typed API client + demo fallback, theme-aware (light/dark). **Still to build:** admin (users/roles/campaigns) and i18n.
+2. **Mobile parent app** (`mobile/`, Flutter) — **scaffold only (~5 files);** now the largest single gap. Coach chat, content reading, audio, nudges opt-in, offline pack. NFR-28 APK-size risk to validate early; the coach surface depends on AI generation (#3). **Note:** the Flutter SDK is not installed in the current build environment, so mobile work can't be compiled/tested/screenshotted here — it needs an environment with Flutter (or a local dev machine).
 3. **AI generation not wired** — the RAG pipeline is built but the `Generator` seam returns "I don't know" until an LLM + approved corpus are configured. **Blocked on Q2 (model/residency) and Q3 (corpus).** This is the Phase-0 safety gate, deliberately sequenced.
 4. **Smaller, self-contained backend items still open:** FR-33 staff user/role management + editable referral directory; FR-12 role-play (needs #3); NFR-11 system-wide audit log; NFR-19 retention job; FR-32 DHIS2 export (needs schema, Q8).
 
-## What was completed in the current backend milestone
+## What was completed in the current milestone
 
-M&E indicators + overview + CSV (FR-29–32), child-protection referral case management (FR-22/23), content feedback & ratings (FR-34), and data-subject rights — export **and** erasure (NFR-17). Backend: **233 tests, ~98% coverage**, Postgres-backed with `pg-mem`-tested SQL.
+- **Backend:** M&E indicators + overview + CSV (FR-29–32), child-protection referral case management (FR-22/23), content feedback & ratings (FR-34), data-subject rights — export **and** erasure (NFR-17), and the editorial **review queue** (FR-20). **235 tests, ~98% coverage**, Postgres-backed with `pg-mem`-tested SQL.
+- **Web staff console:** first four real pages — M&E dashboard, referral triage, content review (FR-20 workflow), content feedback. `typecheck` + `build` pass; rendered light/dark.
+
+## Recommended next steps (in priority order)
+
+1. **Resolve the CI billing lock** so Actions actually guard `dev`/`main` before launch.
+2. **Web admin page** (users/roles/campaigns, FR-33) + a couple of backend GET endpoints it needs — fully unblocked here.
+3. **Backend hardening:** NFR-11 system-wide audit log; NFR-19 retention/anonymisation job.
+4. **Mobile app** — needs a Flutter-capable environment; start with the unblocked surfaces (content browsing, assessments, nudges opt-in), defer the coach until AI generation is wired.
+5. **AI generation** — Phase-0 gated on approved corpus (Q3) + model/residency (Q2) + clinical authority (Q4).
