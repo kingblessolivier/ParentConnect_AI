@@ -57,3 +57,12 @@ flowchart LR
 ## Guardrails independent of the choice
 
 Whichever model is used, the **grounding gate, citation requirement, refusal policy, and evaluation release gate** (`safety-and-guardrails.md`, `evaluation-framework.md`) apply identically. Safety is a property of the pipeline, not the model — so swapping models is safe *because* the gate must pass again.
+
+## NVIDIA as a concrete instance of both options
+
+NVIDIA fits **both** options behind the same seam, which is why it's a convenient first adapter (`ai/.../service/nvidia_generator.py`, wired via `build_generator_from_env`):
+
+- **Option A (cloud):** the hosted API at `https://integrate.api.nvidia.com/v1` is OpenAI-compatible — set `NVIDIA_API_KEY`. This is **offshore (US)**, so it's intended for the **Phase-0 eval spike against the synthetic eval set only** (no real PII). The adapter's residency guard **refuses this endpoint in production** unless `ALLOW_OFFSHORE_LLM=true` records an explicit legal sign-off (Q2).
+- **Option B (in-region):** the *same* model family runs as a self-hosted **NVIDIA NIM** container on an in-region GPU — point `NVIDIA_BASE_URL` at that host and no data leaves the region. This is the production-safe path and needs no override.
+
+The adapter emits the same grounded-answer contract (answer + citations, or "I don't know" when the context can't answer), so the grounding gate and citation check apply unchanged. `[VERIFY]` NVIDIA NIM in-region availability/licensing and Kinyarwanda quality during Phase 0.
