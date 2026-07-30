@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import {
   MessageCircle,
   BookOpenText,
@@ -54,9 +55,16 @@ export default function HomePage() {
 
       <main>
         <section className="hero">
-          <div className="hero-orbs" aria-hidden>
-            <div className="orb orb-1" />
-            <div className="orb orb-2" />
+          <div className="hero-bg" aria-hidden>
+            <Image
+              src="/hero-rwanda.jpg"
+              alt=""
+              fill
+              priority
+              sizes="100vw"
+              style={{ objectFit: 'cover', objectPosition: 'center 70%' }}
+            />
+            <div className="hero-scrim" />
           </div>
           <div className="wrap">
             <div className="hero-grid">

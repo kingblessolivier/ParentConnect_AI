@@ -8,7 +8,11 @@ The **public-facing** site: what ParentConnect AI is, how to reach it, and the s
 
 - `/` — a single informational homepage: hero, how it works (app/SMS coach, micro-lessons, community sessions), safety & privacy commitments, and an always-visible "get help" section.
 - **No PII collected, no login.** Deliberately doesn't print specific helpline/referral phone numbers — those are `[VERIFY]` in `docs/decisions-log.md` (V2) and are correctly per-district data that belongs in the app/SMS referral directory, not hardcoded on a public page that could go stale or be wrong for a reader's district.
-- **Zero client-side JavaScript on the homepage** — a fully server-rendered page, deliberately, since a marketing/info page has no reason to cost a low-bandwidth visitor anything beyond the HTML/CSS.
+- **Near-zero client-side JavaScript** — the only client code is a small scroll-reveal (`components/Reveal.tsx`) and `next/image`'s runtime; the page is otherwise static, deliberately, since a marketing/info page has no reason to cost a low-bandwidth visitor much beyond the HTML/CSS.
+
+## Assets
+
+- `public/hero-rwanda.jpg` — hero background photo. Landscape only, **no people** (deliberate — see the photography note in `docs/decisions-log.md`, 2026-07-30: a stock photo implying specific real parents/teenagers would misrepresent who's actually in the programme). Sourced from Unsplash, free **Unsplash License** (no attribution required, but recorded here for provenance): photo by [maxime niyomwungeri](https://unsplash.com/photos/landscape-of-trees-and-mountain-z-lNmXoXt-k). Self-hosted in `public/`, not hotlinked.
 
 ## Getting started
 
