@@ -13,6 +13,7 @@ ParentConnect AI equips parents and caregivers to become the first and most trus
 | [`backend/`](./backend/) | Node.js + TypeScript (ADR-0014) | Core API & coach orchestrator |
 | [`ai/`](./ai/) | Python (ADR-0014) | RAG & evaluation service (separate) |
 | [`web/`](./web/) | Next.js + React + TS (ADR-0016) | Staff consoles |
+| [`site/`](./site/) | Next.js + React + TS (ADR-0016) | Public site — programme info, safety commitments; not the app or staff console |
 | [`mobile/`](./mobile/) | Flutter (ADR-0015) | Parent-facing app (offline-first) |
 | [`infra/`](./infra/) | Docker/IaC | Local dev, config bundles, deployment |
 | [`docs/`](./docs/) | Markdown | Design, requirements, compliance |
