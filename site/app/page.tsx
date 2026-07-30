@@ -117,10 +117,7 @@ export default function HomePage() {
                 return (
                   <Reveal key={f.title} delay={i * 90}>
                     <div className="feature-row">
-                      <div className="feature-num">
-                        <div className="feature-icon"><Icon size={20} /></div>
-                        0{i + 1}
-                      </div>
+                      <div className="feature-icon"><Icon size={20} /></div>
                       <div className="feature-body">
                         <h3>{f.title}</h3>
                         <p>{f.body}</p>

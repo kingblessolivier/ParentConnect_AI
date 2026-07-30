@@ -165,10 +165,6 @@ section { padding: 96px 0; }
   padding: 34px 0; border-top: 1px solid var(--border);
 }
 .feature-row:last-child { border-bottom: 1px solid var(--border); }
-.feature-num {
-  font-family: var(--font-display); font-size: 15px; color: var(--brass); font-weight: 600;
-  display: flex; align-items: center; gap: 10px;
-}
 .feature-icon {
   width: 46px; height: 46px; border-radius: 13px; background: var(--teal-soft); color: var(--teal-strong);
   display: grid; place-items: center; flex-shrink: 0;
