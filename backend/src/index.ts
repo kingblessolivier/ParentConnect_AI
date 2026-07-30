@@ -5,6 +5,8 @@
  * (Postgres when DATABASE_URL is set — ADR-0002), builds the app, and listens.
  */
 
+import { pathToFileURL } from 'node:url';
+
 import { buildApp, type AppDeps } from './app.js';
 import { loadConfig } from './config.js';
 import { createPool } from './lib/db.js';
@@ -53,7 +55,7 @@ async function main(): Promise<void> {
   );
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   main().catch((err) => {
     // eslint-disable-next-line no-console
     console.error(err);
