@@ -10,6 +10,7 @@ import {
   ArrowRight,
 } from 'lucide-react';
 import { Reveal } from '../components/Reveal';
+import { SiteNav } from '../components/SiteNav';
 
 const FEATURES = [
   {
@@ -39,19 +40,7 @@ const TRUST = [
 export default function HomePage() {
   return (
     <>
-      <nav className="site-nav">
-        <div className="wrap">
-          <div className="brand">
-            <span className="brand-mark">PC</span>
-            ParentConnect AI
-          </div>
-          <div className="site-links">
-            <a href="#how-it-works">How it works</a>
-            <a href="#safety">Safety &amp; privacy</a>
-            <a href="#help">Get help</a>
-          </div>
-        </div>
-      </nav>
+      <SiteNav />
 
       <main>
         <section className="hero">

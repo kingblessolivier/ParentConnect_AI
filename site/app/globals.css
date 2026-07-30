@@ -73,15 +73,13 @@ b, strong { font-weight: 650; }
 .wrap { max-width: 1120px; margin: 0 auto; padding: 0 28px; }
 
 /* ---------- Nav ---------- */
+/* Transparent over the hero photo — one continuous scene — until scrolled. */
 .site-nav {
-  position: sticky; top: 0; z-index: 10;
-  background: color-mix(in srgb, var(--paper) 78%, transparent);
-  backdrop-filter: blur(14px) saturate(160%);
-  -webkit-backdrop-filter: blur(14px) saturate(160%);
-  border-bottom: 1px solid var(--border);
+  position: fixed; top: 0; left: 0; right: 0; z-index: 20;
+  background: transparent; border-bottom: 1px solid transparent;
 }
-.site-nav .wrap { display: flex; align-items: center; justify-content: space-between; padding: 16px 28px; gap: 20px; flex-wrap: wrap; }
-.brand { display: flex; align-items: center; gap: 11px; font-weight: 650; font-size: 15px; letter-spacing: -0.01em; }
+.site-nav .wrap { display: flex; align-items: center; justify-content: space-between; padding: 18px 28px; gap: 20px; flex-wrap: wrap; }
+.brand { display: flex; align-items: center; gap: 11px; font-weight: 650; font-size: 15px; letter-spacing: -0.01em; color: #fbfaf7; }
 .brand-mark {
   width: 30px; height: 30px; border-radius: 8px; flex-shrink: 0;
   background: linear-gradient(160deg, var(--teal), var(--teal-strong));
@@ -89,8 +87,24 @@ b, strong { font-weight: 650; }
   font-family: var(--font-display); font-weight: 600; font-size: 13px;
 }
 .site-links { display: flex; gap: 30px; flex-wrap: wrap; }
-.site-links a { font-size: 14px; font-weight: 550; color: var(--muted); }
-.site-links a:hover { color: var(--text); }
+.site-links a { font-size: 14px; font-weight: 550; color: rgba(251, 250, 247, 0.82); }
+.site-links a:hover { color: #fbfaf7; }
+
+.site-nav.is-scrolled {
+  background: color-mix(in srgb, var(--paper) 82%, transparent);
+  backdrop-filter: blur(14px) saturate(160%);
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
+  border-bottom: 1px solid var(--border);
+}
+.site-nav.is-scrolled .brand { color: var(--text); }
+.site-nav.is-scrolled .site-links a { color: var(--muted); }
+.site-nav.is-scrolled .site-links a:hover { color: var(--text); }
+
+footer .brand { color: var(--text); }
+
+@media (prefers-reduced-motion: no-preference) {
+  .site-nav, .site-nav .brand, .site-nav .site-links a { transition: background-color .25s ease, border-color .25s ease, color .25s ease; }
+}
 
 /* ---------- Hero ---------- */
 .hero { position: relative; padding: 132px 0 110px; overflow: hidden; min-height: 640px; display: flex; align-items: flex-end; }
