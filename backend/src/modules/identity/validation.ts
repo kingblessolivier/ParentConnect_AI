@@ -9,12 +9,14 @@ import {
   AGE_BANDS,
   CHANNELS,
   LANGUAGES,
+  ROLES,
   type AgeBand,
   type Channel,
   type ConsentInput,
   type ConsentMethod,
   type Language,
   type ProfileInput,
+  type Role,
 } from './types.js';
 
 /** Fields that must never be accepted — they would identify a child (FR-24). */
@@ -78,6 +80,10 @@ export function validateProfileInput(raw: unknown): ProfileInput {
   }
   if (input.childBands !== undefined) out.childBands = validateAgeBands(input.childBands);
   return out;
+}
+
+export function validateRole(raw: unknown): Role {
+  return oneOf(raw, ROLES, 'role');
 }
 
 export function validateConsentInput(raw: unknown): ConsentInput {

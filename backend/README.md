@@ -34,6 +34,7 @@ src/
   - `POST /api/v1/parents` — assisted onboarding, role-gated to CHW/champion/admin (FR-03/05).
   - `POST /api/v1/consent` · `POST /api/v1/consent/withdraw` — recorded in the user's language (NFR-16/17).
   - Auth/RBAC enforced at the API (`auth.ts`), never trusted from the client (NFR-10).
+  - **Admin: users & roles** (FR-33): `GET /api/v1/admin/users?role=` lists accounts (never phoneHash/phoneEnc); `PATCH /api/v1/admin/users/:id/role` assigns one of the 7 roles. Staff accounts are the same `parents` row as everyone else, differentiated only by `role` — this is the only path to ever grant a non-`parent` role, so **the first admin per deployment must be seeded directly in the DB**, not via the API (decisions-log.md, 2026-07-30). An admin cannot change their own role (avoids an accidental self-lockout).
 - **Data-subject rights** (`modules/privacy`, NFR-17, Law 058/2021): `GET /api/v1/me/data-export` returns a downloadable JSON snapshot of **everything the platform holds about the caller** — profile (with P2 phone secrets stripped), consents, assessments, content ratings, referrals they raised (status only), and sessions attended. `DELETE /api/v1/me` **erases** the account (right to be forgotten): profile, consents, assessments, content ratings, and session-attendance links are removed in FK-safe order; **child-protection referrals are retained** (anonymised, FR-24 — erasing a disclosure would defeat the safeguarding pathway), and the response states plainly what was erased vs retained. A caller only ever acts on their **own** data (NFR-10); there is no child data anywhere (FR-24/NFR-15). (Modular-monolith note: `app.ts` constructs **one shared instance per repository** and injects it into every module, so export/erasure act on live data.)
 - **Persistence** (ADR-0002): **PostgreSQL** repository implementations (`pg-repository.ts`) behind the same interfaces, plus a plain-SQL **migration runner** (`lib/migrate.ts`, `migrations/*.sql`). The schema has **no child-identity columns** (FR-24/NFR-15). When `DATABASE_URL` is set the app boots on Postgres (running migrations first); otherwise it uses in-memory repos. Repos are tested against an in-memory Postgres (`pg-mem`), so the SQL is exercised for real without a live DB.
 
@@ -109,7 +110,8 @@ The coach orchestrator calls the **Python AI/RAG service** (`../ai`) over an int
 ```bash
 cp .env.example .env
 npm install
-npm run dev         # placeholder entrypoint
+npm run dev         # CONFIG_DIR defaults to infra/config/rw-pilot, relative to the repo root —
+                     # set CONFIG_DIR to an absolute path if you run `npm run dev` from backend/
 npm run test        # unit tests
 npm run test:coverage
 npm run lint && npm run typecheck && npm run build

@@ -4,7 +4,7 @@
  * in the UI. NONE of this is real: synthetic ids, no identity of any kind.
  */
 
-import type { Overview, RatingSummary, ReferralView, ReviewItem } from './types';
+import type { AdminUser, Dimension, IndicatorRow, Overview, RatingSummary, ReferralView, ReviewItem } from './types';
 
 export const SAMPLE_OVERVIEW: Overview = {
   totalParents: 1284,
@@ -23,6 +23,45 @@ export const SAMPLE_REFERRALS: ReferralView[] = [
   { id: 'r-1036', raisedByParentId: 'anon-7710', category: 'pregnancy', status: 'actioned', assignedOfficerId: 'cpo-1', createdAt: iso(-52), dueBy: iso(-4), updatedAt: iso(-10), overdue: true },
   { id: 'r-1030', raisedByParentId: 'anon-3390', category: 'exploitation', status: 'closed', assignedOfficerId: 'cpo-1', createdAt: iso(-120), dueBy: iso(-72), updatedAt: iso(-60), overdue: false },
   { id: 'r-1028', raisedByParentId: 'anon-9004', category: 'other', status: 'acknowledged', assignedOfficerId: 'cpo-2', createdAt: iso(-14), dueBy: iso(34), updatedAt: iso(-8), overdue: false },
+];
+
+export const SAMPLE_INDICATORS: Record<Dimension, IndicatorRow[]> = {
+  district: [
+    { group: 'Gasabo', reach: 412, knowledgeChange: 24.1, confidenceChange: 19.5, communicationChange: 16.8 },
+    { group: 'Musanze', reach: 288, knowledgeChange: 20.6, confidenceChange: 17.2, communicationChange: 14.1 },
+    { group: 'Nyagatare', reach: 201, knowledgeChange: 18.4, confidenceChange: 15.9, communicationChange: 12.0 },
+    { group: '(unspecified)', reach: 383, knowledgeChange: 21.0, confidenceChange: 16.4, communicationChange: 13.9 },
+  ],
+  sector: [
+    { group: 'Kimironko', reach: 156, knowledgeChange: 25.3, confidenceChange: 20.1, communicationChange: 17.4 },
+    { group: 'Muhoza', reach: 132, knowledgeChange: 19.8, confidenceChange: 16.5, communicationChange: 13.2 },
+    { group: '(unspecified)', reach: 996, knowledgeChange: 21.9, confidenceChange: 17.8, communicationChange: 14.9 },
+  ],
+  urbanRural: [
+    { group: 'urban', reach: 498, knowledgeChange: 23.7, confidenceChange: 19.0, communicationChange: 16.2 },
+    { group: 'rural', reach: 786, knowledgeChange: 19.9, confidenceChange: 16.6, communicationChange: 13.4 },
+  ],
+  caregiverGender: [
+    { group: 'female', reach: 902, knowledgeChange: 22.6, confidenceChange: 18.4, communicationChange: 15.5 },
+    { group: 'male', reach: 341, knowledgeChange: 20.1, confidenceChange: 16.9, communicationChange: 14.0 },
+    { group: '(unspecified)', reach: 41, knowledgeChange: 17.5, confidenceChange: 14.2, communicationChange: 11.8 },
+  ],
+  channel: [
+    { group: 'sms', reach: 812, knowledgeChange: 20.5, confidenceChange: 16.8, communicationChange: 13.9 },
+    { group: 'app', reach: 361, knowledgeChange: 26.2, confidenceChange: 21.4, communicationChange: 18.6 },
+    { group: 'ussd', reach: 78, knowledgeChange: 18.0, confidenceChange: 14.9, communicationChange: 11.5 },
+    { group: 'ivr', reach: 33, knowledgeChange: 16.4, confidenceChange: 13.1, communicationChange: 10.2 },
+  ],
+};
+
+export const SAMPLE_USERS: AdminUser[] = [
+  { id: 'u-9001', role: 'admin', displayAlias: 'Grace', district: 'Gasabo', sector: null, preferredLanguage: 'en', preferredChannel: 'app', createdAt: iso(-4000) },
+  { id: 'u-9002', role: 'cpo', displayAlias: 'Habimana', district: 'Musanze', sector: null, preferredLanguage: 'rw', preferredChannel: 'app', createdAt: iso(-3200) },
+  { id: 'u-9003', role: 'reviewer', displayAlias: 'Dr. Uwase', district: null, sector: null, preferredLanguage: 'en', preferredChannel: 'app', createdAt: iso(-2800) },
+  { id: 'u-9004', role: 'chw', displayAlias: 'Claudine', district: 'Nyagatare', sector: 'Karangazi', preferredLanguage: 'rw', preferredChannel: 'app', createdAt: iso(-2100) },
+  { id: 'u-9005', role: 'champion', displayAlias: 'Emmanuel', district: 'Gasabo', sector: 'Kimironko', preferredLanguage: 'rw', preferredChannel: 'sms', createdAt: iso(-1500) },
+  { id: 'u-9006', role: 'parent', displayAlias: null, district: 'Gasabo', sector: 'Kimironko', preferredLanguage: 'rw', preferredChannel: 'sms', createdAt: iso(-900) },
+  { id: 'u-9007', role: 'parent', displayAlias: null, district: 'Musanze', sector: null, preferredLanguage: 'rw', preferredChannel: 'ussd', createdAt: iso(-300) },
 ];
 
 export const SAMPLE_REVIEW: ReviewItem[] = [

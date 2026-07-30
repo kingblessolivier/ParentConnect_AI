@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { Info } from 'lucide-react';
 import type { ReferralStatus } from '../lib/types';
 
 export function StatCard({ label, value, sub }: { label: string; value: ReactNode; sub?: string }) {
@@ -19,7 +20,7 @@ export function StatusBadge({ status, overdue }: { status: ReferralStatus; overd
 export function DemoBanner() {
   return (
     <div className="demo-banner">
-      <span aria-hidden>ⓘ</span>
+      <Info size={15} aria-hidden style={{ flexShrink: 0 }} />
       Showing illustrative demo data — no live backend configured
       (<code>NEXT_PUBLIC_API_BASE</code>). All records are synthetic.
     </div>
