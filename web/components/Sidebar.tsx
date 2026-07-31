@@ -6,11 +6,16 @@ import { usePathname, useRouter } from 'next/navigation';
 import { LogIn, LogOut } from 'lucide-react';
 import { clearToken, getSession, type SessionClaims } from '../lib/session';
 import { NAV } from '../lib/nav';
+import { useApiData } from '../lib/useApiData';
+import { SAMPLE_REFERRALS } from '../lib/sample';
+import type { ReferralView } from '../lib/types';
 
 export function Sidebar() {
   const path = usePathname();
   const router = useRouter();
   const [session, setSession] = useState<SessionClaims | null>(null);
+  const { data: referrals } = useApiData<ReferralView[]>('/api/v1/referrals', SAMPLE_REFERRALS);
+  const overdue = referrals.filter((r) => r.overdue && r.status !== 'closed').length;
 
   useEffect(() => {
     setSession(getSession());
@@ -32,13 +37,16 @@ export function Sidebar() {
         </div>
       </div>
       <nav className="nav">
+        <div className="nav-section-label">Console</div>
         {NAV.map((item) => {
           const active = item.href === '/' ? path === '/' : path.startsWith(item.href);
           const Icon = item.icon;
+          const showCount = item.href === '/referrals' && overdue > 0;
           return (
             <Link key={item.href} href={item.href} className={active ? 'active' : ''}>
               <Icon size={16} aria-hidden style={{ flexShrink: 0 }} />
               {item.label}
+              {showCount ? <span className="nav-count" title={`${overdue} overdue`}>{overdue}</span> : null}
             </Link>
           );
         })}

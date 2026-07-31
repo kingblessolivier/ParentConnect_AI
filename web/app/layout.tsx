@@ -1,8 +1,7 @@
 import type { ReactNode } from 'react';
 import { Inter } from 'next/font/google';
 import './globals.css';
-import { Sidebar } from '../components/Sidebar';
-import { TopBar } from '../components/TopBar';
+import { ConsoleShell } from '../components/ConsoleShell';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -36,13 +35,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT }} />
       </head>
       <body>
-        <div className="layout">
-          <Sidebar />
-          <main className="main">
-            <TopBar />
-            <div className="content">{children}</div>
-          </main>
-        </div>
+        <ConsoleShell>{children}</ConsoleShell>
       </body>
     </html>
   );

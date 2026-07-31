@@ -1,11 +1,10 @@
 'use client';
 
-import { useState, type CSSProperties, type FormEvent } from 'react';
+import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
-import { KeyRound, Phone } from 'lucide-react';
+import { KeyRound, Phone, ShieldCheck, ArrowLeft } from 'lucide-react';
 import { apiPost, ApiError } from '../../lib/api';
 import { setToken } from '../../lib/session';
-import { PageHead } from '../../components/ui';
 
 type Step = 'phone' | 'code';
 
@@ -48,72 +47,60 @@ export default function SignInPage() {
   }
 
   return (
-    <>
-      <PageHead title="Sign in">
-        Staff use the same phone + OTP flow as parents — access is granted by role, not by which door you came in through.
-      </PageHead>
+    <div className="auth-wrap">
+      <div className="card pad auth-card">
+        <div className="auth-badge"><ShieldCheck size={22} /></div>
+        <h1 style={{ fontSize: 22, fontWeight: 720, letterSpacing: '-0.02em', margin: '0 0 6px' }}>Staff sign in</h1>
+        <p className="muted" style={{ margin: '0 0 22px', fontSize: 13.5 }}>
+          Staff use the same phone + OTP flow as parents — access is granted by role, not by which door you came in through.
+        </p>
 
-      <div className="card pad" style={{ maxWidth: 380 }}>
         {step === 'phone' ? (
-          <form onSubmit={requestCode} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <label style={{ fontSize: 13, fontWeight: 600 }}>
-              <span style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
-                <Phone size={14} /> Phone number
-              </span>
+          <form onSubmit={requestCode} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <div className="field">
+              <span className="field-label"><Phone size={14} /> Phone number</span>
               <input
                 type="tel"
                 required
+                className="input"
                 placeholder="+250700000000"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                style={inputStyle}
               />
-            </label>
+            </div>
             {error ? <div style={{ color: 'var(--danger)', fontSize: 13 }}>{error}</div> : null}
-            <button className="btn primary" type="submit" disabled={busy}>
+            <button className="btn primary" type="submit" disabled={busy} style={{ justifyContent: 'center' }}>
               {busy ? 'Sending…' : 'Send code'}
             </button>
           </form>
         ) : (
-          <form onSubmit={verifyCode} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <p className="muted" style={{ margin: 0, fontSize: 13 }}>Code sent to {phone}.</p>
-            <label style={{ fontSize: 13, fontWeight: 600 }}>
-              <span style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
-                <KeyRound size={14} /> 6-digit code
-              </span>
+          <form onSubmit={verifyCode} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <p className="muted" style={{ margin: 0, fontSize: 13 }}>Code sent to <strong>{phone}</strong>.</p>
+            <div className="field">
+              <span className="field-label"><KeyRound size={14} /> 6-digit code</span>
               <input
                 type="text"
                 required
+                className="input"
                 inputMode="numeric"
                 autoFocus
                 placeholder="123456"
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
-                style={inputStyle}
               />
-            </label>
+            </div>
             {error ? <div style={{ color: 'var(--danger)', fontSize: 13 }}>{error}</div> : null}
             <div style={{ display: 'flex', gap: 8 }}>
               <button className="btn" type="button" onClick={() => setStep('phone')}>
-                Back
+                <ArrowLeft size={14} /> Back
               </button>
-              <button className="btn primary" type="submit" disabled={busy} style={{ flex: 1 }}>
+              <button className="btn primary" type="submit" disabled={busy} style={{ flex: 1, justifyContent: 'center' }}>
                 {busy ? 'Verifying…' : 'Sign in'}
               </button>
             </div>
           </form>
         )}
       </div>
-    </>
+    </div>
   );
 }
-
-const inputStyle: CSSProperties = {
-  width: '100%',
-  padding: '8px 10px',
-  borderRadius: 8,
-  border: '1px solid var(--border)',
-  background: 'var(--panel-2)',
-  color: 'var(--text)',
-  fontSize: 14,
-};

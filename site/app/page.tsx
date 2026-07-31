@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import Link from 'next/link';
 import {
   MessageCircle,
   BookOpenText,
@@ -11,6 +12,7 @@ import {
 } from 'lucide-react';
 import { Reveal } from '../components/Reveal';
 import { SiteNav } from '../components/SiteNav';
+import { Coach } from '../components/Coach';
 
 const FEATURES = [
   {
@@ -42,7 +44,7 @@ export default function HomePage() {
     <>
       <SiteNav />
 
-      <main>
+      <main id="top">
         <section className="hero">
           <div className="hero-bg" aria-hidden>
             <Image
@@ -75,6 +77,11 @@ export default function HomePage() {
                     Read our safety commitments
                   </a>
                 </div>
+                <ul className="hero-trust" aria-label="How the programme is built">
+                  <li><ShieldCheck size={15} aria-hidden /> Answers trace to an approved source</li>
+                  <li><KeyRound size={15} aria-hidden /> No child&rsquo;s name or ID is ever stored</li>
+                  <li><WifiOff size={15} aria-hidden /> Works offline, on any phone</li>
+                </ul>
               </div>
 
               <Reveal delay={150}>
@@ -127,6 +134,33 @@ export default function HomePage() {
           </div>
         </section>
 
+        <section id="coach">
+          <div className="wrap">
+            <Reveal>
+              <div className="section-head">
+                <span className="eyebrow">Try it now</span>
+                <h2>The coach works on your computer too &mdash; not just a phone.</h2>
+                <p>
+                  Ask a question the way a parent would. Every answer is grounded in an approved,
+                  reviewed source &mdash; and when there isn&rsquo;t one, the coach says so and points to
+                  a person. Nothing you type is stored.
+                </p>
+              </div>
+            </Reveal>
+            <Reveal delay={100}>
+              <Coach />
+            </Reveal>
+            <Reveal delay={160}>
+              <div className="coach-cta">
+                <Link className="btn primary" href="/coach">
+                  Open the full coach workspace <ArrowRight size={15} aria-hidden />
+                </Link>
+                <span>Keep your chats and start new ones &mdash; saved privately on your device.</span>
+              </div>
+            </Reveal>
+          </div>
+        </section>
+
         <section id="safety" className="ink-band">
           <div className="wrap">
             <Reveal>
@@ -148,6 +182,30 @@ export default function HomePage() {
                     </div>
                   );
                 })}
+              </div>
+            </Reveal>
+          </div>
+        </section>
+
+        <section className="cta-section">
+          <div className="wrap">
+            <Reveal>
+              <div className="cta-band">
+                <div>
+                  <span className="eyebrow">The programme</span>
+                  <h2>Built for the pilot, and for the parents after it.</h2>
+                  <p>
+                    ParentConnect AI is in development, preparing for a district pilot in Rwanda. Every
+                    decision &mdash; from Kinyarwanda-first design to offline access to how a disclosure is
+                    handled &mdash; is made so it still holds when the programme reaches thousands of families.
+                  </p>
+                </div>
+                <div className="cta-band-actions">
+                  <a className="btn primary" href="#how-it-works">
+                    See how it works <ArrowRight size={15} aria-hidden />
+                  </a>
+                  <a className="btn ghost" href="#safety">Safety &amp; privacy</a>
+                </div>
               </div>
             </Reveal>
           </div>

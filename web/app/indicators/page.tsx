@@ -4,9 +4,10 @@ import { useState } from 'react';
 import { Download } from 'lucide-react';
 import { apiGetBlob } from '../../lib/api';
 import { useApiData } from '../../lib/useApiData';
+import { toast } from '../../lib/toast';
 import { SAMPLE_INDICATORS } from '../../lib/sample';
 import type { Dimension, IndicatorRow, IndicatorsResponse } from '../../lib/types';
-import { DemoBanner, PageHead } from '../../components/ui';
+import { DemoBanner, PageHead, SortableTh, useSort, useSorted } from '../../components/ui';
 
 const DIMENSIONS: { value: Dimension; label: string }[] = [
   { value: 'district', label: 'District' },
@@ -15,6 +16,8 @@ const DIMENSIONS: { value: Dimension; label: string }[] = [
   { value: 'caregiverGender', label: 'Caregiver gender' },
   { value: 'channel', label: 'Channel' },
 ];
+
+type SortKey = 'group' | 'reach' | 'knowledgeChange' | 'confidenceChange' | 'communicationChange';
 
 const change = (n: number | null) => (n === null ? '—' : `${n > 0 ? '+' : ''}${n}`);
 
@@ -50,66 +53,82 @@ export default function IndicatorsPage() {
     `/api/v1/dashboards/indicators?by=${dimension}`,
     { dimension, rows: SAMPLE_INDICATORS[dimension] },
   );
-  const rows = data.rows.slice().sort((a, b) => b.reach - a.reach);
-  const totalReach = rows.reduce((sum, r) => sum + r.reach, 0);
+  const { sort, toggle } = useSort<SortKey>({ key: 'reach', dir: 'desc' });
+  const rows = useSorted(data.rows, sort, (r, key) => r[key]);
+  const totalReach = data.rows.reduce((sum, r) => sum + r.reach, 0);
+  const maxReach = Math.max(...data.rows.map((r) => r.reach), 1);
 
   async function exportCsv() {
     const filename = `indicators-${dimension}.csv`;
-    if (demo) {
-      downloadBlob(new Blob([toCsv(dimension, rows)], { type: 'text/csv' }), filename);
-      return;
+    try {
+      if (demo) {
+        downloadBlob(new Blob([toCsv(dimension, rows)], { type: 'text/csv' }), filename);
+      } else {
+        const blob = await apiGetBlob(`/api/v1/export/indicators.csv?by=${dimension}`);
+        downloadBlob(blob, filename);
+      }
+      toast(`Exported ${filename}.`);
+    } catch {
+      toast('Export failed.', 'error');
     }
-    const blob = await apiGetBlob(`/api/v1/export/indicators.csv?by=${dimension}`);
-    downloadBlob(blob, filename);
   }
+
+  const dimLabel = DIMENSIONS.find((d) => d.value === dimension)?.label;
 
   return (
     <>
-      <PageHead title="Indicators">
+      <PageHead
+        title="Indicators"
+        actions={
+          <button className="btn" onClick={exportCsv}>
+            <Download size={14} /> Export CSV
+          </button>
+        }
+      >
         Reach and mean baseline→follow-up change, disaggregated by dimension (FR-31). Aggregates only — no individual result ever leaves this view (NFR-10/19).
       </PageHead>
       {demo ? <DemoBanner /> : null}
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18, flexWrap: 'wrap', gap: 10 }}>
-        <div style={{ display: 'flex', gap: 6 }}>
+      <div className="toolbar">
+        <div className="segmented" role="tablist" aria-label="Disaggregate by">
           {DIMENSIONS.map((d) => (
             <button
               key={d.value}
-              className={`btn ${dimension === d.value ? 'primary' : ''}`}
+              className={`btn sm ${dimension === d.value ? 'primary' : ''}`}
+              aria-pressed={dimension === d.value}
               onClick={() => setDimension(d.value)}
             >
               {d.label}
             </button>
           ))}
         </div>
-        <button className="btn" onClick={exportCsv}>
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-            <Download size={14} /> Export CSV
-          </span>
-        </button>
       </div>
 
       <div className="table-wrap">
         <table>
           <thead>
             <tr>
-              <th>{DIMENSIONS.find((d) => d.value === dimension)?.label}</th>
-              <th>Reach</th>
-              <th>Knowledge Δ</th>
-              <th>Confidence Δ</th>
-              <th>Communication Δ</th>
+              <SortableTh label={dimLabel ?? 'Group'} sortKey="group" sort={sort} onSort={toggle} />
+              <SortableTh label="Reach" sortKey="reach" sort={sort} onSort={toggle} />
+              <SortableTh label="Knowledge Δ" sortKey="knowledgeChange" sort={sort} onSort={toggle} align="right" />
+              <SortableTh label="Confidence Δ" sortKey="confidenceChange" sort={sort} onSort={toggle} align="right" />
+              <SortableTh label="Communication Δ" sortKey="communicationChange" sort={sort} onSort={toggle} align="right" />
             </tr>
           </thead>
           <tbody>
             {rows.map((r) => (
               <tr key={r.group}>
-                <td>{r.group}</td>
-                <td className="muted">
-                  {r.reach.toLocaleString()} · {totalReach ? Math.round((r.reach / totalReach) * 100) : 0}%
+                <td style={{ fontWeight: 600 }}>{r.group}</td>
+                <td style={{ minWidth: 180 }}>
+                  <div className="rank-bar">
+                    <span className="mono">{r.reach.toLocaleString()}</span>
+                    <span className="muted mono" style={{ fontSize: 12 }}>{totalReach ? Math.round((r.reach / totalReach) * 100) : 0}%</span>
+                    <div className="bar rank-bar-track" style={{ marginTop: 3 }}><span style={{ width: `${(r.reach / maxReach) * 100}%` }} /></div>
+                  </div>
                 </td>
-                <td>{change(r.knowledgeChange)}</td>
-                <td>{change(r.confidenceChange)}</td>
-                <td>{change(r.communicationChange)}</td>
+                <td className="mono" style={{ textAlign: 'right' }}>{change(r.knowledgeChange)}</td>
+                <td className="mono" style={{ textAlign: 'right' }}>{change(r.confidenceChange)}</td>
+                <td className="mono" style={{ textAlign: 'right' }}>{change(r.communicationChange)}</td>
               </tr>
             ))}
           </tbody>

@@ -2,13 +2,21 @@
 
 import { useEffect, useState } from 'react';
 
+const SECTIONS = [
+  { id: 'how-it-works', label: 'How it works' },
+  { id: 'coach', label: 'Try the coach' },
+  { id: 'safety', label: 'Safety & privacy' },
+  { id: 'help', label: 'Get help' },
+];
+
 /**
  * Transparent over the hero photo (one continuous scene), then gains a
- * solid frosted background once scrolled past it — the nav shouldn't be a
- * visually separate bar sitting on top of the image.
+ * solid frosted background once scrolled past it. Also tracks which section
+ * is in view (scroll-spy) so the current place in the page is always legible.
  */
 export function SiteNav() {
   const [scrolled, setScrolled] = useState(false);
+  const [active, setActive] = useState<string>('');
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 64);
@@ -17,17 +25,35 @@ export function SiteNav() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) setActive(entry.target.id);
+        }
+      },
+      { rootMargin: '-45% 0px -50% 0px' },
+    );
+    for (const s of SECTIONS) {
+      const el = document.getElementById(s.id);
+      if (el) observer.observe(el);
+    }
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <nav className={`site-nav${scrolled ? ' is-scrolled' : ''}`}>
       <div className="wrap">
-        <div className="brand">
+        <a className="brand" href="#top" aria-label="ParentConnect AI — home">
           <span className="brand-mark">PC</span>
           ParentConnect AI
-        </div>
+        </a>
         <div className="site-links">
-          <a href="#how-it-works">How it works</a>
-          <a href="#safety">Safety &amp; privacy</a>
-          <a href="#help">Get help</a>
+          {SECTIONS.map((s) => (
+            <a key={s.id} href={`#${s.id}`} className={active === s.id ? 'is-active' : ''}>
+              {s.label}
+            </a>
+          ))}
         </div>
       </div>
     </nav>

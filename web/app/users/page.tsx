@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, type CSSProperties } from 'react';
+import { useMemo, useState } from 'react';
 import { apiPatch } from '../../lib/api';
 import { useApiData } from '../../lib/useApiData';
+import { toast } from '../../lib/toast';
 import { SAMPLE_USERS } from '../../lib/sample';
 import { ROLES, type AdminUser, type Role } from '../../lib/types';
 import { getSession } from '../../lib/session';
-import { DemoBanner, PageHead } from '../../components/ui';
+import { DemoBanner, PageHead, SearchInput, EmptyState } from '../../components/ui';
 
 const ROLE_LABEL: Record<Role, string> = {
   parent: 'Parent',
@@ -18,30 +19,27 @@ const ROLE_LABEL: Record<Role, string> = {
   admin: 'Admin',
 };
 
-const selectStyle: CSSProperties = {
-  padding: '5px 8px',
-  borderRadius: 7,
-  border: '1px solid var(--border)',
-  background: 'var(--panel-2)',
-  color: 'var(--text)',
-  fontSize: 13,
-  fontWeight: 600,
-};
-
 export default function UsersPage() {
   const { data, demo } = useApiData<AdminUser[]>('/api/v1/admin/users', SAMPLE_USERS);
   const [rows, setRows] = useState<AdminUser[] | null>(null);
   const [filter, setFilter] = useState<Role | 'all'>('all');
+  const [query, setQuery] = useState('');
   const [pending, setPending] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
 
   const list = rows ?? data;
   const mySub = getSession()?.sub;
-  const visible = filter === 'all' ? list : list.filter((u) => u.role === filter);
+
+  const visible = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return list.filter((u) => {
+      if (filter !== 'all' && u.role !== filter) return false;
+      if (!q) return true;
+      return `${u.displayAlias ?? ''} ${u.id} ${u.district ?? ''} ${u.sector ?? ''}`.toLowerCase().includes(q);
+    });
+  }, [list, filter, query]);
 
   async function changeRole(user: AdminUser, role: Role) {
     if (role === user.role) return;
-    setError(null);
     setPending(user.id);
     try {
       if (demo) {
@@ -50,8 +48,9 @@ export default function UsersPage() {
         const updated = await apiPatch<AdminUser>(`/api/v1/admin/users/${user.id}/role`, { role });
         setRows(list.map((u) => (u.id === user.id ? updated : u)));
       }
+      toast(`${user.displayAlias ?? user.id} is now ${ROLE_LABEL[role]}.`);
     } catch {
-      setError(`Could not update ${user.displayAlias ?? user.id}'s role.`);
+      toast(`Could not update ${user.displayAlias ?? user.id}'s role.`, 'error');
     } finally {
       setPending(null);
     }
@@ -63,21 +62,23 @@ export default function UsersPage() {
         Every staff account is granted access by role (FR-33, FR-05). An admin cannot change their own role here — ask another admin.
       </PageHead>
       {demo ? <DemoBanner /> : null}
-      {error ? <div style={{ color: 'var(--danger)', fontSize: 13, marginBottom: 12 }}>{error}</div> : null}
 
-      <div style={{ display: 'flex', gap: 6, marginBottom: 18, flexWrap: 'wrap' }}>
-        <button className={`btn ${filter === 'all' ? 'primary' : ''}`} onClick={() => setFilter('all')}>
-          All ({list.length})
-        </button>
-        {ROLES.map((r) => {
-          const count = list.filter((u) => u.role === r).length;
-          if (count === 0) return null;
-          return (
-            <button key={r} className={`btn ${filter === r ? 'primary' : ''}`} onClick={() => setFilter(r)}>
-              {ROLE_LABEL[r]} ({count})
-            </button>
-          );
-        })}
+      <div className="toolbar">
+        <div className="toolbar-group">
+          <button className={`btn sm ${filter === 'all' ? 'primary' : ''}`} onClick={() => setFilter('all')}>
+            All ({list.length})
+          </button>
+          {ROLES.map((r) => {
+            const count = list.filter((u) => u.role === r).length;
+            if (count === 0) return null;
+            return (
+              <button key={r} className={`btn sm ${filter === r ? 'primary' : ''}`} onClick={() => setFilter(r)}>
+                {ROLE_LABEL[r]} ({count})
+              </button>
+            );
+          })}
+        </div>
+        <SearchInput value={query} onChange={setQuery} placeholder="Search alias, district…" />
       </div>
 
       <div className="table-wrap">
@@ -97,7 +98,7 @@ export default function UsersPage() {
               const isSelf = u.id === mySub;
               return (
                 <tr key={u.id}>
-                  <td>{u.displayAlias ?? <span className="muted">{u.id}</span>}</td>
+                  <td>{u.displayAlias ?? <span className="muted mono">{u.id}</span>}</td>
                   <td style={{ fontWeight: 600, color: u.role === 'admin' ? 'var(--brand)' : undefined }}>
                     {ROLE_LABEL[u.role]}
                     {isSelf ? <span className="muted"> (you)</span> : null}
@@ -107,7 +108,7 @@ export default function UsersPage() {
                   <td className="muted">{u.preferredChannel}</td>
                   <td>
                     <select
-                      style={selectStyle}
+                      className="select"
                       value={u.role}
                       disabled={isSelf || pending === u.id}
                       onChange={(e) => changeRole(u, e.target.value as Role)}
@@ -124,6 +125,7 @@ export default function UsersPage() {
             })}
           </tbody>
         </table>
+        {visible.length === 0 ? <EmptyState title="No matching accounts" hint="Try a different search or role filter." /> : null}
       </div>
     </>
   );

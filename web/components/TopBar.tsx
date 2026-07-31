@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ChevronRight, Sun, Moon, LifeBuoy } from 'lucide-react';
+import { ChevronRight, Sun, Moon, LifeBuoy, Menu } from 'lucide-react';
 import { useApiData } from '../lib/useApiData';
 import { SAMPLE_REFERRALS } from '../lib/sample';
 import type { ReferralView } from '../lib/types';
@@ -28,7 +28,7 @@ const ROLE_COLOR: Record<string, string> = {
   parent: 'var(--muted)',
 };
 
-export function TopBar() {
+export function TopBar({ onMenu }: { onMenu?: () => void }) {
   const path = usePathname();
   const [theme, setTheme] = useState<Theme>('light');
   const [session, setSession] = useState<SessionClaims | null>(null);
@@ -51,9 +51,12 @@ export function TopBar() {
   return (
     <header className="topbar">
       <div className="crumb">
-        <span className="muted">Staff Console</span>
-        <ChevronRight size={13} className="muted" aria-hidden />
-        <span>{navLabelFor(path)}</span>
+        <button className="topbar-icon-btn nav-toggle" onClick={onMenu} aria-label="Open navigation">
+          <Menu size={16} />
+        </button>
+        <span className="muted crumb-root">Staff Console</span>
+        <ChevronRight size={13} className="muted crumb-sep" aria-hidden />
+        <span className="crumb-here">{navLabelFor(path)}</span>
       </div>
 
       <div className="topbar-actions">
