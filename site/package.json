@@ -1,19 +1,20 @@
 {
-  "name": "@parentconnect/web",
+  "name": "@parentconnect/site",
   "version": "0.0.0",
   "private": true,
-  "description": "ParentConnect AI staff web consoles (Next.js + React + TypeScript). See ADR-0016.",
+  "description": "ParentConnect AI public site — what the programme is, how to reach it (app/SMS/community sessions), and always-visible safeguarding help. Not the staff console (see ../web) and not the parent app (see ../mobile).",
   "engines": {
     "node": ">=20"
   },
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -p 3003",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.115.0",
     "lucide-react": "^1.28.0",
     "next": "^14.2.0",
     "react": "^18.3.0",

@@ -35,6 +35,35 @@ export interface ReferralView {
   overdue: boolean;
 }
 
+export type Role = 'parent' | 'chw' | 'champion' | 'school' | 'cpo' | 'admin' | 'reviewer';
+export const ROLES: readonly Role[] = ['parent', 'chw', 'champion', 'school', 'cpo', 'admin', 'reviewer'];
+
+export interface AdminUser {
+  id: string;
+  role: Role;
+  displayAlias: string | null;
+  district: string | null;
+  sector: string | null;
+  preferredLanguage: string;
+  preferredChannel: string;
+  createdAt: string;
+}
+
+export type Dimension = 'district' | 'sector' | 'urbanRural' | 'caregiverGender' | 'channel';
+
+export interface IndicatorRow {
+  group: string;
+  reach: number;
+  knowledgeChange: number | null;
+  confidenceChange: number | null;
+  communicationChange: number | null;
+}
+
+export interface IndicatorsResponse {
+  dimension: Dimension;
+  rows: IndicatorRow[];
+}
+
 export interface RatingSummary {
   itemId: string;
   count: number;

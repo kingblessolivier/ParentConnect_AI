@@ -22,7 +22,13 @@ import {
   type OtpRepository,
   type ParentRepository,
 } from './repository.js';
-import { validateConsentInput, validatePhone, validateProfileInput } from './validation.js';
+import type { ParentProfile } from './types.js';
+import {
+  validateConsentInput,
+  validatePhone,
+  validateProfileInput,
+  validateRole,
+} from './validation.js';
 
 export interface IdentityOptions {
   config: AppConfig;
@@ -58,6 +64,20 @@ function publicProfile(parent: {
     preferredLanguage: parent.preferredLanguage,
     preferredChannel: parent.preferredChannel,
     childBands: parent.childBands,
+  };
+}
+
+function adminUserView(parent: ParentProfile) {
+  // Admin-facing view: role + operational fields, never phoneHash/phoneEnc (P2).
+  return {
+    id: parent.id,
+    role: parent.role,
+    displayAlias: parent.displayAlias ?? null,
+    district: parent.district ?? null,
+    sector: parent.sector ?? null,
+    preferredLanguage: parent.preferredLanguage,
+    preferredChannel: parent.preferredChannel,
+    createdAt: parent.createdAt,
   };
 }
 
@@ -129,6 +149,35 @@ export async function identityRoutes(app: FastifyInstance, opts: IdentityOptions
     }
     reply.code(201);
     return publicProfile(parent);
+  });
+
+  // --- Admin: users & roles (FR-33) ---
+  // Every account — staff included — is a row in the same parent table,
+  // differentiated only by `role`. This is the only path to ever grant a
+  // non-'parent' role, so the very first admin must be seeded directly
+  // (migration/DB), not through the API — documented in decisions-log.md.
+  app.get('/api/v1/admin/users', async (request) => {
+    const ctx = auth(request);
+    requireRole(ctx, ['admin']);
+    const { role } = (request.query ?? {}) as { role?: unknown };
+    const all = await parentRepo.listAll();
+    const filtered = role === undefined ? all : all.filter((p) => p.role === role);
+    return filtered.map(adminUserView);
+  });
+
+  app.patch('/api/v1/admin/users/:id/role', async (request) => {
+    const ctx = auth(request);
+    requireRole(ctx, ['admin']);
+    const { id } = request.params as { id: string };
+    if (id === ctx.parentId) {
+      throw new AppError(400, 'Invalid input', 'Cannot change your own role — ask another admin');
+    }
+    const body = (request.body ?? {}) as { role?: unknown };
+    const role = validateRole(body.role);
+    const target = await parentRepo.findById(id);
+    if (!target) throw new AppError(404, 'Not Found');
+    const updated = await parentRepo.update(id, { role });
+    return adminUserView(updated);
   });
 
   // --- Consent (NFR-16/17) ---

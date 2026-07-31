@@ -143,4 +143,99 @@ describe('identity routes', () => {
     expect(created.statusCode).toBe(201);
     expect(created.json().childBands).toEqual(['10_12']);
   });
+
+  describe('admin: users & roles (FR-33)', () => {
+    function adminToken(): string {
+      return signToken({ sub: 'admin-1', role: 'admin', type: 'access' }, config.jwtSecret, 900);
+    }
+
+    it('non-admin cannot list users', async () => {
+      const parentToken = await getAccessToken(app);
+      const res = await app.inject({
+        method: 'GET',
+        url: '/api/v1/admin/users',
+        headers: { authorization: `Bearer ${parentToken}` },
+      });
+      expect(res.statusCode).toBe(403);
+    });
+
+    it('admin lists users and never sees phoneHash', async () => {
+      await getAccessToken(app); // ensures at least one parent exists
+      const res = await app.inject({
+        method: 'GET',
+        url: '/api/v1/admin/users',
+        headers: { authorization: `Bearer ${adminToken()}` },
+      });
+      expect(res.statusCode).toBe(200);
+      const users = res.json() as Record<string, unknown>[];
+      expect(users.length).toBeGreaterThan(0);
+      for (const u of users) {
+        expect(u).not.toHaveProperty('phoneHash');
+        expect(u).not.toHaveProperty('phoneEnc');
+        expect(u).toHaveProperty('role');
+      }
+    });
+
+    it('admin filters the user list by role', async () => {
+      const res = await app.inject({
+        method: 'GET',
+        url: '/api/v1/admin/users?role=parent',
+        headers: { authorization: `Bearer ${adminToken()}` },
+      });
+      const users = res.json() as { role: string }[];
+      expect(users.every((u) => u.role === 'parent')).toBe(true);
+    });
+
+    it('admin changes another account to a staff role', async () => {
+      const target = await getAccessToken(app);
+      const targetId = (
+        await (
+          await app.inject({
+            method: 'GET',
+            url: '/api/v1/me',
+            headers: { authorization: `Bearer ${target}` },
+          })
+        ).json()
+      ).id as string;
+
+      const res = await app.inject({
+        method: 'PATCH',
+        url: `/api/v1/admin/users/${targetId}/role`,
+        headers: { authorization: `Bearer ${adminToken()}` },
+        payload: { role: 'cpo' },
+      });
+      expect(res.statusCode).toBe(200);
+      expect(res.json().role).toBe('cpo');
+    });
+
+    it('rejects an invalid role', async () => {
+      const res = await app.inject({
+        method: 'PATCH',
+        url: '/api/v1/admin/users/anyone/role',
+        headers: { authorization: `Bearer ${adminToken()}` },
+        payload: { role: 'superuser' },
+      });
+      expect(res.statusCode).toBe(400);
+    });
+
+    it('404s a role change for an unknown account', async () => {
+      const res = await app.inject({
+        method: 'PATCH',
+        url: '/api/v1/admin/users/does-not-exist/role',
+        headers: { authorization: `Bearer ${adminToken()}` },
+        payload: { role: 'cpo' },
+      });
+      expect(res.statusCode).toBe(404);
+    });
+
+    it('refuses to let an admin change their own role', async () => {
+      const res = await app.inject({
+        method: 'PATCH',
+        url: '/api/v1/admin/users/admin-1/role',
+        headers: { authorization: `Bearer ${adminToken()}` },
+        payload: { role: 'parent' },
+      });
+      expect(res.statusCode).toBe(400);
+    });
+  });
 });

@@ -16,6 +16,7 @@ export type ConsentMethod = 'app' | 'sms' | 'ivr' | 'assisted';
 export const LANGUAGES: readonly Language[] = ['rw', 'en', 'fr'];
 export const CHANNELS: readonly Channel[] = ['app', 'sms', 'ussd', 'ivr'];
 export const AGE_BANDS: readonly AgeBand[] = ['10_12', '13_15', '16_19'];
+export const ROLES: readonly Role[] = ['parent', 'chw', 'champion', 'school', 'cpo', 'admin', 'reviewer'];
 
 export interface ParentProfile {
   id: string;
