@@ -10,6 +10,9 @@ import Fastify, { type FastifyInstance } from 'fastify';
 import type { AppConfig } from './config.js';
 import { buildProblemResponse } from './lib/error-handler.js';
 import { toProblem } from './lib/problem.js';
+import { auditRoutes } from './modules/audit/routes.js';
+import { InMemoryAuditRepository, type AuditRepository } from './modules/audit/repository.js';
+import { AuditService } from './modules/audit/service.js';
 import type { AiClient } from './modules/coach/ai-client.js';
 import { coachRoutes } from './modules/coach/routes.js';
 import { contentRoutes } from './modules/content/routes.js';
@@ -78,6 +81,10 @@ export interface AppDeps {
   feedback?: {
     feedbackRepo: FeedbackRepository;
   };
+  /** Inject persistent audit storage (NFR-11). Defaults to in-memory. */
+  audit?: {
+    auditRepo: AuditRepository;
+  };
 }
 
 export async function buildApp(config: AppConfig, deps: AppDeps = {}): Promise<FastifyInstance> {
@@ -121,12 +128,16 @@ export async function buildApp(config: AppConfig, deps: AppDeps = {}): Promise<F
   const sessionRepo: SessionRepository = deps.sessions?.sessionRepo ?? new InMemorySessionRepository();
   const nudgeRepo: NudgeRepository = deps.nudges?.nudgeRepo ?? new InMemoryNudgeRepository();
   const gateway = deps.nudges?.gateway;
+  const auditRepo: AuditRepository = deps.audit?.auditRepo ?? new InMemoryAuditRepository();
+  // One shared audit writer, injected into every module that performs an
+  // audited action (NFR-11). Modules never construct their own.
+  const audit = new AuditService(auditRepo);
 
   // Modules (ADR-0011). Each fails fast if its config is invalid.
-  await app.register(safeguardingRoutes, { config, referralRepo });
-  await app.register(identityRoutes, { config, parentRepo, consentRepo, otpRepo });
+  await app.register(safeguardingRoutes, { config, referralRepo, audit });
+  await app.register(identityRoutes, { config, parentRepo, consentRepo, otpRepo, audit });
   await app.register(coachRoutes, { config, ...(deps.coach ?? {}) });
-  await app.register(contentRoutes, { config, contentRepo });
+  await app.register(contentRoutes, { config, contentRepo, audit });
   await app.register(nudgeRoutes, { config, nudgeRepo, parentRepo, ...(gateway ? { gateway } : {}) });
   await app.register(sessionRoutes, { config, sessionRepo });
   await app.register(meRoutes, { config, assessmentRepo, parentRepo });
@@ -139,7 +150,9 @@ export async function buildApp(config: AppConfig, deps: AppDeps = {}): Promise<F
     feedback: feedbackRepo,
     referrals: referralRepo,
     sessions: sessionRepo,
+    audit,
   });
+  await app.register(auditRoutes, { config, auditRepo });
 
   await app.ready();
   return app;

@@ -8,11 +8,14 @@
 
 import type { FastifyInstance } from 'fastify';
 import type { AppConfig } from '../../config.js';
+import type { AuditService } from '../audit/service.js';
 import { authenticate } from '../identity/auth.js';
 import { DataRightsService, type DataRightsDeps } from './service.js';
 
 export interface PrivacyOptions extends DataRightsDeps {
   config: AppConfig;
+  /** Records that an erasure happened — not what was erased (NFR-11/17). */
+  audit?: AuditService;
 }
 
 export async function privacyRoutes(app: FastifyInstance, opts: PrivacyOptions): Promise<void> {
@@ -31,6 +34,19 @@ export async function privacyRoutes(app: FastifyInstance, opts: PrivacyOptions):
   // referrals are retained (anonymised; safeguarding basis) — see the service.
   app.delete('/api/v1/me', async (request) => {
     const ctx = authenticate(request, opts.config.jwtSecret);
-    return service.erase(ctx.parentId);
+    const result = await service.erase(ctx.parentId);
+    // Proving an erasure was honoured is itself a compliance obligation, so the
+    // *fact* is logged even though the erased data is gone (NFR-11/14/17).
+    opts.audit?.recordSafely(
+      {
+        actorId: ctx.parentId,
+        actorRole: ctx.role,
+        action: 'privacy.erased',
+        entity: 'account',
+        entityId: ctx.parentId,
+      },
+      (err) => app.log.error({ err }, 'audit write failed: privacy.erased'),
+    );
+    return result;
   });
 }

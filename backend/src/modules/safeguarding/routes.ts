@@ -10,6 +10,7 @@
 
 import type { FastifyInstance } from 'fastify';
 import type { AppConfig } from '../../config.js';
+import type { AuditService } from '../audit/service.js';
 import { authenticate, requireRole } from '../identity/auth.js';
 import {
   filterByDistrict,
@@ -23,6 +24,8 @@ export interface SafeguardingOptions {
   config: AppConfig;
   /** Inject persistent referral storage. Defaults to in-memory. */
   referralRepo?: ReferralRepository;
+  /** Mirrors status changes into the system-wide audit log (NFR-11). */
+  audit?: AuditService;
 }
 
 // Who may raise a confidential referral (FR-22) and who may triage/track it
@@ -103,10 +106,25 @@ export async function safeguardingRoutes(
       note?: unknown;
       assignedOfficerId?: unknown;
     };
-    return referrals.transition(id, ctx.parentId, {
+    const updated = await referrals.transition(id, ctx.parentId, {
       toStatus: body.toStatus,
       note: body.note,
       assignedOfficerId: body.assignedOfficerId,
     });
+    // Also mirrored into the system-wide log so a CPO's actions are visible in
+    // one place alongside admin/clinical events (NFR-11). The note is NOT
+    // copied — it may describe a disclosure (NFR-10/15).
+    opts.audit?.recordSafely(
+      {
+        actorId: ctx.parentId,
+        actorRole: ctx.role,
+        action: 'referral.transitioned',
+        entity: 'referral',
+        entityId: id,
+        metadata: { to: updated.status },
+      },
+      (err) => app.log.error({ err }, 'audit write failed: referral.transitioned'),
+    );
+    return updated;
   });
 }

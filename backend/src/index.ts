@@ -11,6 +11,7 @@ import { buildApp, type AppDeps } from './app.js';
 import { loadConfig } from './config.js';
 import { createPool } from './lib/db.js';
 import { runMigrations } from './lib/migrate.js';
+import { PgAuditRepository } from './modules/audit/pg-repository.js';
 import { PgContentRepository } from './modules/content/pg-repository.js';
 import { PgFeedbackRepository } from './modules/feedback/pg-repository.js';
 import {
@@ -45,6 +46,7 @@ async function main(): Promise<void> {
     deps.me = { assessmentRepo: new PgAssessmentRepository(pool), parentRepo };
     deps.safeguarding = { referralRepo: new PgReferralRepository(pool) };
     deps.feedback = { feedbackRepo: new PgFeedbackRepository(pool) };
+    deps.audit = { auditRepo: new PgAuditRepository(pool) };
   }
 
   const app = await buildApp(config, deps);
