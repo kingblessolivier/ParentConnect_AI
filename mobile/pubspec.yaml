@@ -9,8 +9,14 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  # Offline-first store + background sync land in Phase 1 (ADR-0008/0015):
-  #   drift / sqflite (local store), workmanager (background sync).
+  # Kept deliberately small — every package is APK weight against the <25 MB
+  # ceiling (NFR-28). `http` for the backend, `shared_preferences` for the
+  # offline referral-directory cache so "get help" works with no network.
+  http: ^1.2.0
+  shared_preferences: ^2.2.0
+  url_launcher: ^6.2.0
+  # A full offline content store (drift/sqflite) + background sync land with
+  # the offline content pack, FR-18 (ADR-0008/0015).
 
 dev_dependencies:
   flutter_test:
