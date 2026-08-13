@@ -35,6 +35,13 @@ export interface AppConfig {
   readonly refreshTtlSeconds: number;
   /** Child-protection referral SLA in hours: due_by = created_at + this (FR-23, D2). */
   readonly referralSlaHours: number;
+  /**
+   * Browser origins allowed to call this API (the staff console). Never a
+   * wildcard: this API serves personal data, and `*` cannot be combined with
+   * credentials anyway (NFR-10/13). Production must set CORS_ORIGINS
+   * explicitly; development defaults to the local console ports.
+   */
+  readonly corsOrigins: readonly string[];
 }
 
 const DEV_JWT_SECRET = 'dev-insecure-jwt-secret';
@@ -45,6 +52,17 @@ const DEV_PHONE_ENC_KEY = '00000000000000000000000000000000000000000000000000000
 function parseNodeEnv(value: string | undefined): NodeEnv {
   if (value === 'production' || value === 'test') return value;
   return 'development';
+}
+
+/** Comma-separated allowlist; dev falls back to the local console/site ports. */
+function parseOrigins(value: string | undefined, nodeEnv: NodeEnv): string[] {
+  const configured = (value ?? '')
+    .split(',')
+    .map((o) => o.trim())
+    .filter((o) => o !== '');
+  if (configured.length > 0) return configured;
+  if (nodeEnv === 'production') return [];
+  return ['http://localhost:3002', 'http://localhost:3003'];
 }
 
 function parseBool(value: string | undefined, fallback: boolean): boolean {
@@ -100,5 +118,6 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     accessTtlSeconds: Number(env.ACCESS_TTL_SECONDS ?? 900),
     refreshTtlSeconds: Number(env.REFRESH_TTL_SECONDS ?? 60 * 60 * 24 * 30),
     referralSlaHours: Number(env.REFERRAL_SLA_HOURS ?? 48),
+    corsOrigins: parseOrigins(env.CORS_ORIGINS, nodeEnv),
   };
 }

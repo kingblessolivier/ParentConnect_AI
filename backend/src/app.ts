@@ -7,6 +7,7 @@
  */
 
 import Fastify, { type FastifyInstance } from 'fastify';
+import cors from '@fastify/cors';
 import type { AppConfig } from './config.js';
 import { buildProblemResponse } from './lib/error-handler.js';
 import { toProblem } from './lib/problem.js';
@@ -100,6 +101,16 @@ export async function buildApp(config: AppConfig, deps: AppDeps = {}): Promise<F
       // Never log PII/P3 (NFR-10/15). Extend as request shapes grow.
       redact: ['req.headers.authorization', 'req.body.phone', 'req.body.otp'],
     },
+  });
+
+  // The staff console is served from a different origin, so the browser needs
+  // an explicit allowlist. Never `*`: this API returns personal data, and a
+  // wildcard can't carry credentials anyway (NFR-10/13). An empty list (the
+  // production default until CORS_ORIGINS is set) blocks all browser origins.
+  await app.register(cors, {
+    origin: config.corsOrigins.length > 0 ? [...config.corsOrigins] : false,
+    credentials: true,
+    methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE'],
   });
 
   // Single problem+json error handler (mapping logic in lib/error-handler.ts).

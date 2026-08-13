@@ -42,3 +42,30 @@ describe('loadConfig', () => {
     expect(c.configDir).toBe('/x');
   });
 });
+
+describe('CORS origins (NFR-10/13)', () => {
+  it('defaults to the local console/site ports in development', () => {
+    expect(loadConfig({ NODE_ENV: 'development' }).corsOrigins).toEqual([
+      'http://localhost:3002',
+      'http://localhost:3003',
+    ]);
+  });
+
+  it('is empty in production until explicitly configured — never a wildcard', () => {
+    const c = loadConfig({
+      NODE_ENV: 'production',
+      DEBUG: 'false',
+      JWT_SECRET: 'x'.repeat(32),
+      PHONE_PEPPER: 'y'.repeat(32),
+      PHONE_ENC_KEY: 'a'.repeat(64),
+    });
+    expect(c.corsOrigins).toEqual([]);
+  });
+
+  it('parses and trims a comma-separated allowlist', () => {
+    expect(loadConfig({ CORS_ORIGINS: 'https://console.example.rw, https://admin.example.rw' }).corsOrigins).toEqual([
+      'https://console.example.rw',
+      'https://admin.example.rw',
+    ]);
+  });
+});
