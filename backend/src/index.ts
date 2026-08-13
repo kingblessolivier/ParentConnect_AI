@@ -22,6 +22,7 @@ import {
 import { LogGateway } from './modules/messaging/gateway.js';
 import { PgNudgeRepository } from './modules/nudges/pg-repository.js';
 import { PgReferralRepository } from './modules/safeguarding/referral-pg-repository.js';
+import { PgDirectoryRepository } from './modules/safeguarding/directory-pg-repository.js';
 import { PgAssessmentRepository } from './modules/me/pg-repository.js';
 import { PgSessionRepository } from './modules/sessions/pg-repository.js';
 
@@ -44,7 +45,10 @@ async function main(): Promise<void> {
     deps.nudges = { nudgeRepo: new PgNudgeRepository(pool), parentRepo, gateway: new LogGateway() };
     deps.sessions = { sessionRepo: new PgSessionRepository(pool) };
     deps.me = { assessmentRepo: new PgAssessmentRepository(pool), parentRepo };
-    deps.safeguarding = { referralRepo: new PgReferralRepository(pool) };
+    deps.safeguarding = {
+      referralRepo: new PgReferralRepository(pool),
+      directoryRepo: new PgDirectoryRepository(pool),
+    };
     deps.feedback = { feedbackRepo: new PgFeedbackRepository(pool) };
     deps.audit = { auditRepo: new PgAuditRepository(pool) };
   }

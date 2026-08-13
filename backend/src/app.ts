@@ -38,6 +38,10 @@ import {
   InMemoryReferralRepository,
   type ReferralRepository,
 } from './modules/safeguarding/referral-repository.js';
+import {
+  InMemoryDirectoryRepository,
+  type DirectoryRepository,
+} from './modules/safeguarding/directory-repository.js';
 import { safeguardingRoutes } from './modules/safeguarding/routes.js';
 import { sessionRoutes } from './modules/sessions/routes.js';
 import { InMemorySessionRepository, type SessionRepository } from './modules/sessions/repository.js';
@@ -76,6 +80,8 @@ export interface AppDeps {
   /** Inject persistent referral case storage. Defaults to in-memory. */
   safeguarding?: {
     referralRepo: ReferralRepository;
+    /** Editable directory overrides (FR-33). */
+    directoryRepo?: DirectoryRepository;
   };
   /** Inject persistent content-feedback storage. Defaults to in-memory. */
   feedback?: {
@@ -125,6 +131,8 @@ export async function buildApp(config: AppConfig, deps: AppDeps = {}): Promise<F
   const feedbackRepo = deps.feedback?.feedbackRepo ?? new InMemoryFeedbackRepository();
   const assessmentRepo: AssessmentRepository = deps.me?.assessmentRepo ?? new InMemoryAssessmentRepository();
   const referralRepo: ReferralRepository = deps.safeguarding?.referralRepo ?? new InMemoryReferralRepository();
+  const directoryRepo: DirectoryRepository =
+    deps.safeguarding?.directoryRepo ?? new InMemoryDirectoryRepository();
   const sessionRepo: SessionRepository = deps.sessions?.sessionRepo ?? new InMemorySessionRepository();
   const nudgeRepo: NudgeRepository = deps.nudges?.nudgeRepo ?? new InMemoryNudgeRepository();
   const gateway = deps.nudges?.gateway;
@@ -134,7 +142,7 @@ export async function buildApp(config: AppConfig, deps: AppDeps = {}): Promise<F
   const audit = new AuditService(auditRepo);
 
   // Modules (ADR-0011). Each fails fast if its config is invalid.
-  await app.register(safeguardingRoutes, { config, referralRepo, audit });
+  await app.register(safeguardingRoutes, { config, referralRepo, directoryRepo, audit });
   await app.register(identityRoutes, { config, parentRepo, consentRepo, otpRepo, audit });
   await app.register(coachRoutes, { config, ...(deps.coach ?? {}) });
   await app.register(contentRoutes, { config, contentRepo, audit });
