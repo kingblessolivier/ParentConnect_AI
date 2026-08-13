@@ -41,6 +41,8 @@ export interface OtpRepository {
   save(record: OtpRecord): Promise<void>;
   get(phoneHash: string): Promise<OtpRecord | null>;
   delete(phoneHash: string): Promise<void>;
+  /** Purge codes past their expiry; returns how many were removed (NFR-19). */
+  deleteExpired(nowMs: number): Promise<number>;
 }
 
 export class InMemoryParentRepository implements ParentRepository {
@@ -119,5 +121,16 @@ export class InMemoryOtpRepository implements OtpRepository {
   }
   async delete(phoneHash: string): Promise<void> {
     this.byPhone.delete(phoneHash);
+  }
+
+  async deleteExpired(nowMs: number): Promise<number> {
+    let removed = 0;
+    for (const [phoneHash, record] of this.byPhone) {
+      if (record.expiresAtMs < nowMs) {
+        this.byPhone.delete(phoneHash);
+        removed += 1;
+      }
+    }
+    return removed;
   }
 }
