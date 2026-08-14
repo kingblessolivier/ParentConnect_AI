@@ -25,7 +25,14 @@ export const KB: KbChunk[] = [
     id: 'kb-communication',
     topic: 'communication',
     ageBands: ['all'],
-    keywords: ['talk', 'talking', 'conversation', 'start', 'begin', 'discuss', 'nganire', 'kuvugana', 'kuganira', 'ikiganiro'],
+    keywords: [
+      'talk', 'talking', 'conversation', 'start', 'begin', 'discuss', 'speak', 'tell',
+      // A parent's opening question is usually generic, not topical — these are
+      // the words they actually use ("what advice can I give my adolescent?").
+      'advice', 'advise', 'guide', 'guidance', 'help', 'how', 'what', 'should',
+      'teen', 'teenager', 'adolescent', 'adolescence', 'child', 'daughter', 'son',
+      'nganire', 'kuvugana', 'kuganira', 'ikiganiro', 'inama', 'umwana',
+    ],
     title: 'Talking with your teen',
     text: 'A parent does not need perfect words — they need to be a safe person to come to. Short, calm, everyday moments (walking, cooking, doing chores together) work far better than one big formal "talk". Listening without reacting harshly, and admitting when you do not know something, keeps the door open so a young person keeps coming back.',
     source: 'Talking with your teen — reviewed lesson (illustrative, pending clinical review)',
@@ -110,5 +117,82 @@ export const KB: KbChunk[] = [
     title: 'Finding trusted help',
     text: 'No parent has every answer, and reaching out is a strength, not a failure. Encourage your child to have a few trusted adults besides you — a relative, teacher, community health worker, or counsellor — they can turn to. For health questions, a local health facility or community health worker can give accurate, private guidance. If there is any sign of harm, abuse, or danger, seek help immediately through local child-protection services.',
     source: 'Finding trusted help — reviewed lesson (illustrative, pending clinical review)',
+  },
+
+  // ---------------------------------------------------------------------------
+  // Entries below are drafted from published research rather than invented, so
+  // a reviewer can check them against a named source. They cover the questions
+  // parents actually open with — which the original topic-keyed entries missed.
+  // Full drafts + provenance: ai/corpus/seed/parent-communication.yaml
+  // ---------------------------------------------------------------------------
+  {
+    id: 'kb-parent-role',
+    topic: 'communication',
+    ageBands: ['all'],
+    keywords: [
+      'advice', 'advise', 'guidance', 'guide', 'what should i', 'how do i', 'where do i start',
+      'my child', 'my daughter', 'my son', 'adolescent', 'adolescence', 'teenager', 'teen',
+      'parent', 'parenting', 'raise', 'raising', 'inama', 'umubyeyi', 'umwana',
+    ],
+    title: 'What actually helps: being the person they can come to',
+    text: 'The most useful thing a parent gives an adolescent is not a perfect explanation — it is being someone safe to ask. The World Health Organization notes that sexuality education is a lifelong process that can begin at home with trusted caregivers, and that consistent messages at home and school reinforce each other. Research on parent–adolescent communication associates open conversation at home with lower risk of adolescent pregnancy. Practically: talk in short ordinary moments rather than one big formal talk, answer the question that was actually asked, and let them see that asking is welcome.',
+    source: 'WHO, Comprehensive sexuality education fact sheet (11 Mar 2026); Uwambaje et al., Rwanda J. Medicine & Health Sciences, 2025 — pending clinical review',
+  },
+  {
+    id: 'kb-fear',
+    topic: 'communication',
+    ageBands: ['all'],
+    keywords: [
+      'warn', 'warning', 'warnings', 'scare', 'scared', 'strict', 'punish', 'forbid',
+      'abstinence', 'danger', 'dangers', 'lecture', 'shout', 'angry', 'guhana', 'gutera ubwoba',
+    ],
+    title: 'Why warnings alone tend not to work',
+    text: 'Asked what their parents told them about sex, adolescents in a 2025 Rwandan study most often described warnings — dangers, diseases, and "don\'t". Many said this made them stop asking questions rather than stop taking risks, so they took their questions to friends or the internet instead. The WHO\'s evidence review points the same way: programmes covering both delaying sex and how to stay safe are more effective than abstinence-only messages, and being open does not encourage earlier sexual activity. This does not mean abandoning your values — it means stating them and still answering the question.',
+    source: 'Uwambaje et al., Rwanda J. Medicine & Health Sciences, 2025; WHO CSE fact sheet (11 Mar 2026) — pending clinical review',
+  },
+  {
+    id: 'kb-start-early',
+    topic: 'communication',
+    ageBands: ['10_12', '13_15'],
+    keywords: [
+      'when', 'what age', 'how old', 'too young', 'too early', 'right time', 'ready',
+      'ryari', 'imyaka',
+    ],
+    title: 'When to start — earlier than most parents expect',
+    text: 'Adolescents in the 2025 Rwandan study said conversations often came too late, sometimes only after a girl had already begun menstruating. Guidance for parents is consistent on this: some girls begin puberty at 8 and some boys by 9, so these talks may need to start earlier than expected, and they work best as an ongoing series of small conversations rather than one event. Starting early does not push a child towards sex — the WHO states plainly that good sexuality education does not increase sexual activity or encourage earlier sexual behaviour.',
+    source: 'Uwambaje et al., 2025; Nemours KidsHealth, Talking to Your Child About Puberty; WHO CSE fact sheet (11 Mar 2026) — pending clinical review',
+  },
+  {
+    id: 'kb-dont-know',
+    topic: 'communication',
+    ageBands: ['all'],
+    keywords: [
+      'don’t know', 'dont know', 'do not know', 'not sure', 'unsure', 'wrong answer',
+      'embarrassed', 'embarrassing', 'awkward', 'ashamed', 'shy', 'nervous', 'ipfunwe', 'isoni',
+    ],
+    title: 'When you don’t know the answer, or it feels awkward',
+    text: 'Not knowing is normal and is not a failure. Saying "I don\'t know — let me find out" keeps a child\'s trust; guessing loses it, and for health questions a community health worker or local facility can give an accurate answer. If the topic itself feels uncomfortable, it can help to practise what you want to say beforehand, and to name the awkwardness out loud: many parents find that saying "this was never discussed with me either, but I would rather you heard it from me" turns embarrassment into something honest rather than something that ends the conversation.',
+    source: 'Nemours KidsHealth, Talking to Your Child About Puberty; Uwambaje et al., 2025 — pending clinical review',
+  },
+  {
+    id: 'kb-not-accusing',
+    topic: 'communication',
+    ageBands: ['all'],
+    keywords: [
+      'asked me', 'she asked', 'he asked', 'why is she asking', 'already doing',
+      'is she active', 'suspect', 'worried she', 'worried he', 'accuse',
+    ],
+    title: 'A question is not a confession',
+    text: 'One of the things adolescents in the 2025 study said silenced them fastest was a parent assuming that asking about sex meant they were already having it. If a question alarms you, it usually helps to answer it first — briefly and honestly — then ask what made them curious, without accusation, and make clear they can come back with more. Guidance for parents makes the same point from the other side: do not assume what a child already knows; ask them.',
+    source: 'Uwambaje et al., Rwanda J. Medicine & Health Sciences, 2025; Nemours KidsHealth — pending clinical review',
+  },
+  {
+    id: 'kb-fathers',
+    topic: 'communication',
+    ageBands: ['all'],
+    keywords: ['father', 'fathers', 'dad', 'papa', 'man', 'as a man', 'se', 'data', 'umubyeyi w’umugabo'],
+    title: 'For fathers — being someone your child can approach',
+    text: 'Adolescents in the 2025 Rwandan study described fathers as strict and intimidating, and said this made them much less likely to raise anything about their bodies or relationships; often those conversations happened only with mothers, if at all. That is what young people reported experiencing, not a statement about what fathers are — and it means small changes are noticeable. Being the one who asks about their day, reacting calmly the first time something awkward comes up, and being willing to say you find the topic difficult all matter. Adolescents in the same study said they valued parents sharing their own experience, describing it as making the conversation feel safe.',
+    source: 'Uwambaje et al., Rwanda J. Medicine & Health Sciences, 2025 — pending clinical review',
   },
 ];

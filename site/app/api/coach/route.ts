@@ -44,6 +44,37 @@ const REFERRAL: Record<Lang, CoachReply> = {
   },
 };
 
+/**
+ * Deterministic refusal gate (NFR-21) — mirrors `ai/safety/refusal.py`.
+ *
+ * Diagnosis, prescribing and termination advice are refused *before* the model
+ * is called, never left to it. This matters more since retrieval gained a
+ * general fallback: a dosing question now always retrieves *something*, so
+ * without this check the model would be the only thing standing between that
+ * question and an answer. A pattern check is not clever, but it fails closed.
+ */
+const REFUSE_PATTERNS: RegExp[] = [
+  // diagnosis
+  /\bdo i have\b/i,
+  /\bis (?:this|it) an? (?:std|sti|infection|disease)\b/i,
+  /\bwhat (?:disease|infection|illness)\b/i,
+  // prescribing / dosing
+  /\bhow (?:much|many) (?:mg|milligrams?|pills?|tablets?)\b/i,
+  /\bwhat (?:dose|dosage)\b/i,
+  /\bwhich (?:medicine|medication|drug|pills?|contracepti\w*) should\b/i,
+  /\b(?:dose|dosage) of\b/i,
+  /\bshould she take\b/i,
+  /\bprescribe\b/i,
+  // termination
+  /\babortion\b/i,
+  /\b(?:terminate|end) (?:the|my|her|a) pregnancy\b/i,
+  /\bgukuramo inda\b/i,
+];
+
+function requiresRefusal(text: string): boolean {
+  return REFUSE_PATTERNS.some((re) => re.test(text));
+}
+
 const REFUSAL: Record<Lang, CoachReply> = {
   en: {
     kind: 'refusal',
@@ -67,15 +98,43 @@ function isCrisis(text: string): boolean {
 }
 
 /** Deterministic keyword retrieval. Swap for embeddings when the real KB lands. */
+/**
+ * Chunks that answer a broad "how do I approach this at all?" question.
+ *
+ * Without this, the single most likely opening question a parent asks — "what
+ * advice can I give my teenager?" — matched no topic keyword, scored zero, and
+ * was refused. That refusal was never a safety win: it's general communication
+ * guidance the corpus *does* cover, just not under any one topic word.
+ */
+const GENERAL_CHUNK_IDS = ['kb-communication', 'kb-parent-role', 'kb-fear', 'kb-getting-help'];
+
+function generalChunks(): KbChunk[] {
+  return GENERAL_CHUNK_IDS.map((id) => KB.find((c) => c.id === id)).filter(
+    (c): c is KbChunk => c !== undefined,
+  );
+}
+
 function retrieve(question: string, ageBand: AgeBand): KbChunk[] {
   const q = question.toLowerCase();
+  // Match on word boundaries as well as substrings, so "adolescent"/"teenager"
+  // and multi-word keys both land. Plain `includes` alone missed too much.
+  const words = new Set(q.split(/[^a-zÀ-ɏ’']+/).filter(Boolean));
   const scored = KB.map((c) => {
-    let score = c.keywords.reduce((s, k) => (q.includes(k) ? s + 1 : s), 0);
+    let score = c.keywords.reduce((s, k) => {
+      if (k.includes(' ')) return q.includes(k) ? s + 1 : s;
+      return words.has(k) || q.includes(k) ? s + 1 : s;
+    }, 0);
     if (score > 0 && (c.ageBands.includes('all') || c.ageBands.includes(ageBand))) score += 0.5;
     return { c, score };
   })
     .filter((x) => x.score > 0)
     .sort((a, b) => b.score - a.score);
+
+  // Nothing matched: fall back to the general guidance rather than refusing.
+  // This does NOT loosen grounding — the model is still told to answer only
+  // from what it is given and to refuse if these chunks don't cover the
+  // question, so a clinical question still gets a refusal, not a guess.
+  if (scored.length === 0) return generalChunks().slice(0, 3);
   return scored.slice(0, 3).map((x) => x.c);
 }
 
@@ -99,6 +158,10 @@ export async function POST(req: Request) {
 
   // 1. Safeguarding — never runs through the model.
   if (isCrisis(question)) return Response.json(REFERRAL[lang]);
+
+  // 1b. Refusal policy (NFR-21) — diagnosis/prescribing/termination are refused
+  // deterministically, before any model call, not left to the model's judgement.
+  if (requiresRefusal(question)) return Response.json(REFUSAL[lang]);
 
   // No key configured → tell the client to use its safe demo.
   if (!process.env.ANTHROPIC_API_KEY) {
