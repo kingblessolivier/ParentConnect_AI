@@ -7,7 +7,18 @@
  * fast at boot rather than leaking later.
  */
 
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
+
 export type NodeEnv = 'development' | 'test' | 'production';
+
+// Anchored to this file's own location, NOT process.cwd(). A relative default
+// ('infra/config/rw-pilot') silently resolves to the wrong place the moment
+// the process is launched from anywhere but the repo root — including the
+// documented `cd backend && npm run dev`, which is `backend/`. This module
+// lives at backend/src/config.ts (or backend/dist/config.js once built), so
+// two levels up is always the repo root regardless of CWD or build/run mode.
+const DEFAULT_CONFIG_DIR = join(dirname(fileURLToPath(import.meta.url)), '../../infra/config/rw-pilot');
 
 export interface AppConfig {
   readonly nodeEnv: NodeEnv;
@@ -107,7 +118,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     nodeEnv,
     port,
     debug,
-    configDir: env.CONFIG_DIR ?? 'infra/config/rw-pilot',
+    configDir: env.CONFIG_DIR ?? DEFAULT_CONFIG_DIR,
     aiServiceUrl: env.AI_SERVICE_URL ?? 'http://localhost:8000',
     databaseUrl: env.DATABASE_URL,
     jwtSecret,

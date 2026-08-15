@@ -114,8 +114,8 @@ The coach orchestrator calls the **Python AI/RAG service** (`../ai`) over an int
 ```bash
 cp .env.example .env
 npm install
-npm run dev         # CONFIG_DIR defaults to infra/config/rw-pilot, relative to the repo root —
-                     # set CONFIG_DIR to an absolute path if you run `npm run dev` from backend/
+npm run dev         # CONFIG_DIR defaults to ../infra/config/rw-pilot regardless of CWD;
+                     # override CONFIG_DIR only to point at a different config bundle
 npm run test        # unit tests
 npm run test:coverage
 npm run lint && npm run typecheck && npm run build

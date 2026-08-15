@@ -1,4 +1,6 @@
 import { describe, it, expect } from 'vitest';
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
 import { loadConfig } from './config.js';
 
 describe('loadConfig', () => {
@@ -40,6 +42,20 @@ describe('loadConfig', () => {
     expect(c.port).toBe(8080);
     expect(c.aiServiceUrl).toBe('http://ai:8000');
     expect(c.configDir).toBe('/x');
+  });
+
+  it('the default configDir points at a real, existing directory regardless of CWD (ADR-0010)', () => {
+    // Regression: this used to default to the *relative* string
+    // 'infra/config/rw-pilot', resolved against process.cwd(). That broke the
+    // moment the process launched from anywhere but the repo root — including
+    // `cd backend && npm run dev`, the documented workflow — with the
+    // referral directory failing to load and the app refusing to boot
+    // (ADR-0010: a missing referral pathway must fail fast, but it should
+    // fail because the file is actually missing, not because of where you
+    // happened to run the command from).
+    const c = loadConfig({});
+    expect(c.configDir.startsWith('.')).toBe(false); // must be absolute
+    expect(existsSync(join(c.configDir, 'referral-directory.json'))).toBe(true);
   });
 });
 
