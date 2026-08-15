@@ -130,44 +130,48 @@ export function Coach() {
         {messages.map((m) =>
           m.role === 'user' ? (
             <div key={m.id} className="coach-msg user">
-              <div className="coach-who">{t.you}</div>
               <div className="coach-bubble">{m.text}</div>
             </div>
           ) : (
             <div key={m.id} className={`coach-msg coach ${m.reply?.kind ?? ''}`}>
-              <div className="coach-who">
-                {m.reply?.kind === 'referral' ? <LifeBuoy size={13} /> : <ShieldCheck size={13} />}
-                {t.coach}
+              <div className="coach-avatar" aria-hidden>
+                {m.reply?.kind === 'referral' ? <LifeBuoy size={14} /> : <ShieldCheck size={14} />}
               </div>
-              <div className="coach-bubble">
-                <TypeOut text={m.reply?.answer ?? ''} animate={m.id === lastCoachId} />
-                {m.reply?.starter ? <div className="coach-starter">{m.reply.starter}</div> : null}
-                {m.reply?.source ? (
-                  <div className="coach-source"><BookText size={12} aria-hidden /> {m.reply.source}</div>
-                ) : null}
-              </div>
-              {!busy && m.id === lastCoachId ? (() => {
-                const asked = messages.filter((x) => x.role === 'user').map((x) => x.text ?? '');
-                const options = nextSuggestions(m.reply, asked, t.chips);
-                return options.length > 0 ? (
-                  <div className="coach-followups">
-                    <span className="coach-followups-label"><MessageCirclePlus size={12} aria-hidden /> {t.continue}</span>
-                    <div className="coach-chips">
-                      {options.map((c) => (
-                        <button key={c} type="button" className="coach-chip" onClick={() => void send(c)}>{c}</button>
-                      ))}
+              <div className="coach-msg-col">
+                <div className="coach-who">{t.coach}</div>
+                <div className="coach-bubble">
+                  <TypeOut text={m.reply?.answer ?? ''} animate={m.id === lastCoachId} />
+                  {m.reply?.starter ? <div className="coach-starter">{m.reply.starter}</div> : null}
+                  {m.reply?.source ? (
+                    <div className="coach-source"><BookText size={12} aria-hidden /> {m.reply.source}</div>
+                  ) : null}
+                </div>
+                {!busy && m.id === lastCoachId ? (() => {
+                  const asked = messages.filter((x) => x.role === 'user').map((x) => x.text ?? '');
+                  const options = nextSuggestions(m.reply, asked, t.chips);
+                  return options.length > 0 ? (
+                    <div className="coach-followups">
+                      <span className="coach-followups-label"><MessageCirclePlus size={12} aria-hidden /> {t.continue}</span>
+                      <div className="coach-chips">
+                        {options.map((c) => (
+                          <button key={c} type="button" className="coach-chip" onClick={() => void send(c)}>{c}</button>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                ) : null;
-              })() : null}
+                  ) : null;
+                })() : null}
+              </div>
             </div>
           ),
         )}
 
         {busy ? (
           <div className="coach-msg coach">
-            <div className="coach-who"><ShieldCheck size={13} /> {t.coach}</div>
-            <div className="coach-bubble coach-typing"><span></span><span></span><span></span></div>
+            <div className="coach-avatar" aria-hidden><ShieldCheck size={14} /></div>
+            <div className="coach-msg-col">
+              <div className="coach-who">{t.coach}</div>
+              <div className="coach-bubble coach-typing"><span></span><span></span><span></span></div>
+            </div>
           </div>
         ) : null}
       </div>
