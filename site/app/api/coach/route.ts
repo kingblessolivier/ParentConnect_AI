@@ -28,13 +28,13 @@ const REFERRAL: Record<Lang, CoachReply> = {
   en: {
     kind: 'referral',
     answer:
-      'Thank you for telling me. If you or a young person is in danger or has been harmed, you deserve real support right now. The app and SMS service connect you to your district’s child-protection and health contacts (such as Isange One Stop Centres) — no login and no name required.',
+      'Thank you for telling me. If you or a young person is in danger or has been harmed, you deserve real support right now. The app and SMS service connect you to your district’s child-protection and health contacts (such as Isange One Stop Centres), no login and no name required.',
     source: 'Your safety comes first.',
   },
   rw: {
     kind: 'referral',
     answer:
-      'Urakoze kubimbwira. Niba wowe cyangwa umwana ari mu kaga cyangwa yagizweho nabi, ukwiye ubufasha nyabwo nonaha. Porogaramu na SMS bikwegereza abashinzwe kurinda abana n’ubuzima mu karere kawe (nka Isange One Stop Centres) — nta kwinjira kandi nta zina bisaba.',
+      'Urakoze kubimbwira. Niba wowe cyangwa umwana ari mu kaga cyangwa yagizweho nabi, ukwiye ubufasha nyabwo nonaha. Porogaramu na SMS bikwegereza abashinzwe kurinda abana n’ubuzima mu karere kawe (nka Isange One Stop Centres), nta kwinjira kandi nta zina bisaba.',
     source: 'Umutekano wawe uza mbere.',
   },
 };
@@ -43,13 +43,13 @@ const REFUSAL: Record<Lang, CoachReply> = {
   en: {
     kind: 'refusal',
     answer:
-      'That’s a really good question, and I want to get it right — but I don’t have an approved answer for it yet, and I won’t guess, because a wrong answer here could do harm. In the live service I’d connect you with a trained person or a reviewed lesson instead.',
+      'That’s a really good question, and I want to get it right, but I don’t have an approved answer for it yet, and I won’t guess, because a wrong answer here could do harm. In the live service I’d connect you with a trained person or a reviewed lesson instead.',
     source: 'A refusal is a success here when the alternative is an unsafe answer.',
   },
   rw: {
     kind: 'refusal',
     answer:
-      'Icyo ni ikibazo cyiza cyane, kandi nifuza kugisubiza neza — ariko nta gisubizo cyemejwe mfite kuri cyo, kandi sinakeka, kubera ko igisubizo kitari cyo cyatera ingaruka. Muri serivisi nyayo, nakuhuza n’umuntu wabihuguriwe cyangwa isomo ryasuzumwe.',
+      'Icyo ni ikibazo cyiza cyane, kandi nifuza kugisubiza neza, ariko nta gisubizo cyemejwe mfite kuri cyo, kandi sinakeka, kubera ko igisubizo kitari cyo cyatera ingaruka. Muri serivisi nyayo, nakuhuza n’umuntu wabihuguriwe cyangwa isomo ryasuzumwe.',
     source: 'Kwanga gusubiza ni intsinzi iyo ikindi cyari igisubizo kitizewe.',
   },
 };

@@ -64,7 +64,7 @@ export function SiteNav() {
   return (
     <nav className={`site-nav${scrolled ? ' is-scrolled' : ''}${open ? ' is-open' : ''}`}>
       <div className="wrap">
-        <a className="brand" href="#top" aria-label="ParentConnect AI — home" onClick={() => setOpen(false)}>
+        <a className="brand" href="#top" aria-label="ParentConnect AI home" onClick={() => setOpen(false)}>
           <span className="brand-mark">PC</span>
           ParentConnect AI
         </a>

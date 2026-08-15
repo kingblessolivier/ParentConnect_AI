@@ -14,7 +14,7 @@ const fraunces = Fraunces({
 export const metadata = {
   title: 'ParentConnect AI',
   description:
-    'Helping Rwandan parents become their teenagers’ most trusted source on growing up — private coaching, conversation scripts, and community support, in Kinyarwanda first.',
+    'Helping Rwandan parents become their teenagers’ most trusted source on growing up: private coaching, conversation scripts, and community support, in Kinyarwanda first.',
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
