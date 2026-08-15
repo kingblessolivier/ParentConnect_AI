@@ -162,3 +162,34 @@ describe('genuinely out-of-scope questions still refuse rather than guessing', (
     expect(demoReply('what is the capital of France', 'en').kind).toBe('refusal');
   });
 });
+
+/**
+ * The coach's own suggested-question chips (Coach.tsx / CoachDashboard.tsx
+ * LABELS.chips) must never produce a refusal — a parent tapping a question
+ * *we* wrote should always get a grounded answer, in both languages.
+ */
+const EN_CHIPS = [
+  'How do I talk to my teen?',
+  'What should I say about periods?',
+  'How do I explain consent?',
+  'A friend told my child a myth',
+];
+const RW_CHIPS = [
+  'Nganire nte n’umwana wanjye?',
+  'Mvuge iki ku mihango?',
+  'Nsobanure nte kwemera?',
+  'Inshuti yabwiye umwana ikinyoma',
+];
+
+describe('suggestion chips always get a grounded answer, never a refusal', () => {
+  for (const q of EN_CHIPS) {
+    it(`EN: "${q}"`, () => {
+      expect(demoReply(q, 'en').kind).toBe('answer');
+    });
+  }
+  for (const q of RW_CHIPS) {
+    it(`RW: "${q}"`, () => {
+      expect(demoReply(q, 'rw').kind).toBe('answer');
+    });
+  }
+});

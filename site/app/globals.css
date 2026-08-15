@@ -103,14 +103,15 @@ b, strong { font-weight: 650; }
   color: #ffffff; display: grid; place-items: center;
   font-family: var(--font-display); font-weight: 600; font-size: 13px;
 }
-.site-links { display: flex; gap: 30px; flex-wrap: wrap; }
-.site-links a { position: relative; font-size: 14px; font-weight: 550; color: rgba(251, 250, 247, 0.82); padding-bottom: 3px; }
+.site-links { display: flex; align-items: center; gap: 30px; }
+.site-links a { position: relative; font-size: 14px; font-weight: 550; color: rgba(251, 250, 247, 0.82); padding-bottom: 3px; white-space: nowrap; }
 .site-links a:hover { color: #fbfaf7; }
 .site-links a::after {
   content: ""; position: absolute; left: 0; right: 100%; bottom: 0; height: 2px;
   background: var(--terracotta); border-radius: 2px; transition: right .25s ease;
 }
 .site-links a.is-active::after { right: 0; }
+.site-links .nav-cta { padding: 9px 18px; font-size: 13.5px; white-space: nowrap; }
 
 .site-nav.is-scrolled {
   background: color-mix(in srgb, var(--paper) 82%, transparent);
@@ -130,6 +131,45 @@ footer .brand-mark { color: var(--brand-ink); }
   .site-nav, .site-nav .brand, .site-nav .site-links a { transition: background-color .25s ease, border-color .25s ease, color .25s ease; }
 }
 
+/* Hamburger toggle — hidden on desktop, shown once links no longer fit */
+.nav-toggle {
+  display: none; align-items: center; justify-content: center;
+  width: 38px; height: 38px; border-radius: 10px; flex-shrink: 0;
+  background: transparent; border: 1px solid rgba(251, 250, 247, 0.3); color: #fbfaf7;
+  cursor: pointer;
+}
+.site-nav.is-scrolled .nav-toggle { border-color: var(--border); color: var(--text); }
+.site-nav.is-open .nav-toggle { border-color: var(--border); color: var(--text); }
+
+.nav-mobile { display: none; }
+
+@media (max-width: 760px) {
+  .site-links { display: none; }
+  .nav-toggle { display: inline-flex; }
+
+  /* A dropdown needs a solid backdrop regardless of scroll position — it can
+     open while the nav is still transparent-over-the-hero. */
+  .site-nav.is-open {
+    background: var(--paper);
+    border-bottom: 1px solid var(--border);
+  }
+  .site-nav.is-open .brand { color: var(--text); }
+  .site-nav.is-open .brand-mark { color: var(--brand-ink); }
+
+  .nav-mobile {
+    display: flex; flex-direction: column; gap: 4px;
+    padding: 8px 20px 22px;
+    border-top: 1px solid var(--border);
+  }
+  .nav-mobile[hidden] { display: none; }
+  .nav-mobile a:not(.btn) {
+    padding: 12px 4px; font-size: 15.5px; font-weight: 600; color: var(--text);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-mobile a.is-active { color: var(--brand); }
+  .nav-mobile .btn { margin-top: 14px; justify-content: center; }
+}
+
 /* ---------- Hero ---------- */
 .hero { position: relative; padding: 132px 0 110px; overflow: hidden; min-height: 640px; display: flex; align-items: flex-end; }
 .hero-bg { position: absolute; inset: 0; z-index: 0; }
@@ -142,7 +182,24 @@ footer .brand-mark { color: var(--brand-ink); }
 
 .hero .wrap { position: relative; z-index: 2; }
 .hero-grid { display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 56px; align-items: end; }
-@media (max-width: 900px) { .hero-grid { grid-template-columns: 1fr; } }
+
+@media (max-width: 900px) {
+  .hero-grid { grid-template-columns: 1fr; gap: 30px; }
+  /* The scrim above is a left-to-right gradient tuned for the 2-column
+     layout (dark under the text on the left, lighter under the photo on the
+     right). Once the grid collapses to one column, text and card both span
+     the full width, so that horizontal gradient leaves whatever sits on the
+     right — including some of the text — over the lighter, low-contrast
+     part of the photo. Darken more evenly instead. */
+  .hero-scrim {
+    background:
+      linear-gradient(to top, rgba(6, 11, 18, 0.82) 0%, rgba(6, 11, 18, 0.5) 46%, rgba(6, 11, 18, 0.22) 100%);
+  }
+}
+@media (max-width: 640px) {
+  .hero { padding: 108px 0 44px; min-height: 0; }
+  .hero .lede { font-size: 16.5px; }
+}
 
 .eyebrow {
   display: inline-flex; align-items: center; gap: 8px;
@@ -208,6 +265,10 @@ footer .brand-mark { color: var(--brand-ink); }
 /* ---------- Section shell ---------- */
 section { padding: 96px 0; }
 .section-head { max-width: 56ch; margin-bottom: 54px; }
+@media (max-width: 640px) {
+  section { padding: 56px 0; }
+  .section-head { margin-bottom: 34px; }
+}
 .section-head h2 {
   font-family: var(--font-display); font-weight: 600; font-size: clamp(28px, 3.4vw, 40px);
   letter-spacing: -0.015em; margin: 16px 0 14px; text-wrap: balance;
@@ -510,6 +571,18 @@ footer .brand { font-size: 13.5px; color: var(--text); }
   .cw-input { padding: 12px 16px 8px; }
 }
 @media (prefers-reduced-motion: reduce) { .cw-side { transition: none; } }
+
+/* Narrow phones: the header (menu + brand + language toggle + age select)
+   otherwise overflows — the "Coach workspace" label and "Child's age" text
+   were the two biggest offenders, so drop them first (the select/aria-label
+   keeps the control usable, just unlabelled visually). */
+@media (max-width: 480px) {
+  .cw-top { gap: 10px; padding: 10px 14px; }
+  .cw-brand-text { display: none; }
+  .cw-controls { gap: 8px; }
+  .coach-age span { display: none; }
+  .coach-age select { padding: 5px 6px; font-size: 12.5px; }
+}
 
 /* ---------- Reveal-on-scroll ---------- */
 .reveal { opacity: 0; transform: translateY(18px); }

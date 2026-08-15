@@ -104,7 +104,7 @@ export function Coach() {
           </div>
           <label className="coach-age">
             <span>{t.age}</span>
-            <select value={ageBand} onChange={(e) => setAgeBand(e.target.value as AgeBand)}>
+            <select value={ageBand} onChange={(e) => setAgeBand(e.target.value as AgeBand)} aria-label={t.age}>
               {(Object.keys(t.ageOpts) as AgeBand[]).map((k) => (
                 <option key={k} value={k}>{t.ageOpts[k]}</option>
               ))}

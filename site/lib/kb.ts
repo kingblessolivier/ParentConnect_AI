@@ -52,7 +52,12 @@ export const KB: KbChunk[] = [
       'change', 'breast', 'breasts', 'voice', 'facial hair', 'pubic hair', 'hair', 'acne',
       'pimple', 'pimples', 'smell', 'odor', 'odour', 'wet dream', 'wet dreams', 'erection',
       'discharge', 'bleeding', 'blood', 'cramps', 'mature', 'maturing', 'maturity', 'growing up',
-      'imihango', 'ukwezi', 'ubukure', 'umubiri',
+      // 'mihango' alongside 'imihango': Kinyarwanda nouns drop their class
+      // prefix in some grammatical contexts ("ku mihango" vs "imihango"), and
+      // the matcher's suffix-based fuzzy logic doesn't handle a *leading*
+      // prefix difference — so without the bare root, "Mvuge iki ku mihango?"
+      // (a question this coach itself suggests) fell through to a refusal.
+      'imihango', 'mihango', 'ukwezi', 'ubukure', 'umubiri',
     ],
     title: 'Puberty and the body',
     text: 'Puberty and menstruation are normal, healthy signs that a young body is growing up. They are nothing to be ashamed of. Talking about them openly, in plain language and without fear, helps a young person feel safe and prepared rather than scared or secretive. Reassure them that what they are experiencing is expected and that they can always ask you.',
