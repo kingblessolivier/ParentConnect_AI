@@ -18,25 +18,25 @@ const FEATURES = [
   {
     icon: MessageCircle,
     title: 'A private coach, by app or SMS',
-    body: 'Ask a question in Kinyarwanda or English and get a grounded answer with a conversation starter for your child’s age — never a guess. If it doesn’t have an approved answer, it says so and points you to a person instead.',
+    body: 'Ask a question in Kinyarwanda or English and get a grounded answer with a conversation starter for your child’s age, never a guess. If it doesn’t have an approved answer, it says so and points you to a person instead.',
   },
   {
     icon: BookOpenText,
     title: 'Micro-lessons, with audio',
-    body: 'Short, clinically and culturally reviewed lessons on puberty, consent, and relationships — built for low literacy first, with audio as a first-class option, not an afterthought.',
+    body: 'Short, clinically and culturally reviewed lessons on puberty, consent, and relationships, built for low literacy first, with audio as a first-class option, not an afterthought.',
   },
   {
     icon: Users,
     title: 'Community sessions',
-    body: 'Community health workers and trained parent champions run in-person sessions with guides and discussion prompts — for parents who’d rather learn alongside their neighbours.',
+    body: 'Community health workers and trained parent champions run in-person sessions with guides and discussion prompts, for parents who’d rather learn alongside their neighbours.',
   },
 ];
 
 const TRUST = [
-  { icon: ShieldCheck, title: 'Every answer traces to an approved source', body: 'The coach only answers from a clinically and culturally reviewed knowledge base — never open-ended guessing.' },
+  { icon: ShieldCheck, title: 'Every answer traces to an approved source', body: 'The coach only answers from a clinically and culturally reviewed knowledge base. Never open-ended guessing.' },
   { icon: KeyRound, title: 'We never ask for your child’s name or ID', body: 'Only an age band is ever recorded. No adolescent identity is stored anywhere in the system.' },
-  { icon: LifeBuoy, title: 'Disclosures get help immediately', body: 'A sign of abuse, exploitation, or crisis routes straight to local referral help — calmly, without needing anyone’s identity.' },
-  { icon: WifiOff, title: 'Works even when the network doesn’t', body: 'Saved lessons and help information are available offline — a coach that’s temporarily unreachable never leaves you stranded.' },
+  { icon: LifeBuoy, title: 'Disclosures get help immediately', body: 'A sign of abuse, exploitation, or crisis routes straight to local referral help, calmly, without needing anyone’s identity.' },
+  { icon: WifiOff, title: 'Works even when the network doesn’t', body: 'Saved lessons and help information are available offline. A coach that’s temporarily unreachable never leaves you stranded.' },
 ];
 
 export default function HomePage() {

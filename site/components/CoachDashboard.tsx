@@ -25,9 +25,9 @@ const LABELS: Record<Lang, {
     continue: 'You could also ask',
     chips: ['How do I talk to my teen?', 'What should I say about periods?', 'How do I explain consent?', 'A friend told my child a myth'],
     disclaimer: 'Not a diagnosis. The live coach answers only from a reviewed knowledge base and never stores your name or your child’s.',
-    demo: 'Preview — sample grounded answers. The live coach connects to the approved knowledge base and routes any disclosure to real help.',
+    demo: 'Preview: sample grounded answers. The live coach connects to the approved knowledge base and routes any disclosure to real help.',
     clearAll: 'Clear all chats', deleteChat: 'Delete chat', untitled: 'New conversation',
-    privacy: 'Saved only on this device — never on our servers. On a shared phone, delete chats when you’re done.',
+    privacy: 'Saved only on this device, never on our servers. On a shared phone, delete chats when you’re done.',
     greeting: 'Ask a question the way a parent would. Every answer is grounded in an approved source.',
   },
   rw: {
@@ -37,9 +37,9 @@ const LABELS: Record<Lang, {
     continue: 'Ushobora no kubaza',
     chips: ['Nganire nte n’umwana wanjye?', 'Mvuge iki ku mihango?', 'Nsobanure nte kwemera?', 'Inshuti yabwiye umwana ikinyoma'],
     disclaimer: 'Si isuzuma. Umujyanama nyawe asubiza ashingiye ku bumenyi bwasuzumwe kandi ntabika izina ryawe cyangwa iry’umwana.',
-    demo: 'Igerageza — ibisubizo by’urugero bishingiye ku nyandiko. Umujyanama nyawe yifashisha ubumenyi bwemejwe kandi akohereza ku bufasha nyabwo.',
+    demo: 'Igerageza: ibisubizo by’urugero bishingiye ku nyandiko. Umujyanama nyawe yifashisha ubumenyi bwemejwe kandi akohereza ku bufasha nyabwo.',
     clearAll: 'Siba ibiganiro byose', deleteChat: 'Siba ikiganiro', untitled: 'Ikiganiro gishya',
-    privacy: 'Bibikwa kuri iki gikoresho gusa — ntabwo biba kuri seriveri. Ku telefone isangiwe, siba ibiganiro nurangiza.',
+    privacy: 'Bibikwa kuri iki gikoresho gusa, ntabwo biba kuri seriveri. Ku telefone isangiwe, siba ibiganiro nurangiza.',
     greeting: 'Baza ikibazo nk’uko umubyeyi yakibaza. Buri gisubizo gishingira ku nkomoko yemejwe.',
   },
 };
