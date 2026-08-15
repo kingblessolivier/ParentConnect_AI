@@ -20,6 +20,12 @@ export interface KbChunk {
   title: string;
   text: string;
   source: string;
+  /** A natural next question after this one, shown as a suggestion chip once
+   *  the coach has answered — keeps the conversation going without the
+   *  parent having to think of what to ask next. Deliberately just ONE
+   *  question, sent back through the same grounded retrieval as anything
+   *  else typed, not a hardcoded "next chunk" jump. */
+  followUp: { en: string; rw: string };
 }
 
 export const KB: KbChunk[] = [
@@ -41,6 +47,7 @@ export const KB: KbChunk[] = [
     title: 'Talking with your teen',
     text: 'A parent does not need perfect words — they need to be a safe person to come to. Short, calm, everyday moments (walking, cooking, doing chores together) work far better than one big formal "talk". Listening without reacting harshly, and admitting when you do not know something, keeps the door open so a young person keeps coming back.',
     source: 'Talking with your teen — reviewed lesson (illustrative, pending clinical review)',
+    followUp: { en: 'What if I don’t know what to say?', rw: 'Nakora nte niba ntazi icyo kuvuga?' },
   },
   {
     id: 'kb-puberty',
@@ -62,6 +69,7 @@ export const KB: KbChunk[] = [
     title: 'Puberty and the body',
     text: 'Puberty and menstruation are normal, healthy signs that a young body is growing up. They are nothing to be ashamed of. Talking about them openly, in plain language and without fear, helps a young person feel safe and prepared rather than scared or secretive. Reassure them that what they are experiencing is expected and that they can always ask you.',
     source: 'Puberty & the body — reviewed lesson (illustrative, pending clinical review)',
+    followUp: { en: 'What if she feels embarrassed about it?', rw: 'Bite niba yumva afite isoni?' },
   },
   {
     id: 'kb-consent',
@@ -80,6 +88,7 @@ export const KB: KbChunk[] = [
     title: 'Consent and healthy boundaries',
     text: 'Consent means everyone freely agrees, every time — and anyone can say no at any point, even to someone they know. Teaching a child that their body is their own, that "no" must always be respected, and that they can tell a trusted adult about anything that makes them uncomfortable is one of the strongest ways to keep them safe.',
     source: 'Consent & healthy boundaries — reviewed lesson (illustrative, pending clinical review)',
+    followUp: { en: 'How do I explain this to a younger child?', rw: 'Nabisobanurira nte umwana muto?' },
   },
   {
     id: 'kb-myths',
@@ -93,6 +102,7 @@ export const KB: KbChunk[] = [
     title: 'Answering myths calmly',
     text: 'Many worries young people carry come from myths shared by friends or online. Correcting these calmly, with accurate and respectful information rather than punishment or shame, builds trust. When a child feels they can check things with a parent without being judged, they rely less on unreliable sources.',
     source: 'Common myths, answered — reviewed lesson (illustrative, pending clinical review)',
+    followUp: { en: 'Where do these myths usually come from?', rw: 'Ibi bihuha bikunda kuva he?' },
   },
   {
     id: 'kb-relationships',
@@ -109,6 +119,7 @@ export const KB: KbChunk[] = [
     title: 'Healthy relationships and peer pressure',
     text: 'Adolescents learn a lot about relationships from their peers. Parents help by talking about what respect, honesty, and safety look like in any friendship or relationship, and by making clear the young person can walk away from anything that feels wrong. Naming peer pressure openly makes it easier for a teen to resist it.',
     source: 'Healthy relationships — reviewed lesson (illustrative, pending clinical review)',
+    followUp: { en: 'How do I talk about peer pressure?', rw: 'Nganire nte ku mihati y’inshuti?' },
   },
   {
     id: 'kb-online',
@@ -123,6 +134,7 @@ export const KB: KbChunk[] = [
     title: 'Phones, social media and staying safe online',
     text: 'Young people meet a lot of ideas — and a lot of pressure — online. Parents help most by staying curious and calm rather than banning devices outright: ask what apps they enjoy and who they talk to, agree simple rules together, and make clear they can always come to you if a message or photo request makes them uncomfortable, without fear of losing the phone. A child who is not afraid of punishment is far more likely to report something worrying.',
     source: 'Staying safe online — reviewed lesson (illustrative, pending clinical review)',
+    followUp: { en: 'How do I bring it up without taking the phone away?', rw: 'Nabivuga nte ntabuze telefone?' },
   },
   {
     id: 'kb-emotions',
@@ -137,6 +149,7 @@ export const KB: KbChunk[] = [
     title: 'Big feelings and mood changes',
     text: 'Strong and changing moods are a normal part of growing up. What helps most is a parent who listens without rushing to fix or judge, takes feelings seriously, and keeps showing warmth even when a teen is withdrawn. If low mood, fear, or withdrawal is severe or lasts a long time, or you are ever worried about your child’s safety, reach out to a health worker or counsellor — you do not have to manage it alone.',
     source: 'Supporting your teen’s wellbeing — reviewed lesson (illustrative, pending clinical review)',
+    followUp: { en: 'When should I actually be worried?', rw: 'Ni ryari nkwiye kugira impungenge?' },
   },
   {
     id: 'kb-saying-no',
@@ -150,6 +163,7 @@ export const KB: KbChunk[] = [
     title: 'Helping a teen say no',
     text: 'Being able to say no — to a friend, a dare, or anyone pushing them — is a skill parents can practise with a child, not just lecture about. Talk through what they could actually say and do, agree a code word they can text you to be picked up from any situation, and reassure them you will not be angry if they call. Knowing they have a way out makes it easier to resist pressure in the moment.',
     source: 'Helping a teen say no — reviewed lesson (illustrative, pending clinical review)',
+    followUp: { en: 'What if my child is too shy to say no?', rw: 'Bite niba umwana afite isoni yo kwanga?' },
   },
   {
     id: 'kb-self-esteem',
@@ -163,6 +177,7 @@ export const KB: KbChunk[] = [
     title: 'Confidence and body image',
     text: 'Adolescents often compare themselves to others, especially online, and can be hard on their own bodies and abilities. Parents build confidence by noticing effort and character rather than only looks or results, avoiding critical comments about weight or appearance, and reminding a young person that bodies change at different times for everyone. Feeling accepted at home is a strong protection against pressure elsewhere.',
     source: 'Confidence & body image — reviewed lesson (illustrative, pending clinical review)',
+    followUp: { en: 'What if she compares herself to people online?', rw: 'Bite niba yigereranya n’abo ku murandasi?' },
   },
   {
     id: 'kb-getting-help',
@@ -177,6 +192,7 @@ export const KB: KbChunk[] = [
     title: 'Finding trusted help',
     text: 'No parent has every answer, and reaching out is a strength, not a failure. Encourage your child to have a few trusted adults besides you — a relative, teacher, community health worker, or counsellor — they can turn to. For health questions, a local health facility or community health worker can give accurate, private guidance. If there is any sign of harm, abuse, or danger, seek help immediately through local child-protection services.',
     source: 'Finding trusted help — reviewed lesson (illustrative, pending clinical review)',
+    followUp: { en: 'Who can I trust with this besides myself?', rw: 'Ni nde nakwizera kuri ibi usibye jyewe?' },
   },
 
   // ---------------------------------------------------------------------------
@@ -197,6 +213,7 @@ export const KB: KbChunk[] = [
     title: 'What actually helps: being the person they can come to',
     text: 'The most useful thing a parent gives an adolescent is not a perfect explanation — it is being someone safe to ask. The World Health Organization notes that sexuality education is a lifelong process that can begin at home with trusted caregivers, and that consistent messages at home and school reinforce each other. Research on parent–adolescent communication associates open conversation at home with lower risk of adolescent pregnancy. Practically: talk in short ordinary moments rather than one big formal talk, answer the question that was actually asked, and let them see that asking is welcome.',
     source: 'WHO, Comprehensive sexuality education fact sheet (11 Mar 2026); Uwambaje et al., Rwanda J. Medicine & Health Sciences, 2025 — pending clinical review',
+    followUp: { en: 'Where do I even start?', rw: 'Ntangirire he?' },
   },
   {
     id: 'kb-fear',
@@ -209,6 +226,7 @@ export const KB: KbChunk[] = [
     title: 'Why warnings alone tend not to work',
     text: 'Asked what their parents told them about sex, adolescents in a 2025 Rwandan study most often described warnings — dangers, diseases, and "don\'t". Many said this made them stop asking questions rather than stop taking risks, so they took their questions to friends or the internet instead. The WHO\'s evidence review points the same way: programmes covering both delaying sex and how to stay safe are more effective than abstinence-only messages, and being open does not encourage earlier sexual activity. This does not mean abandoning your values — it means stating them and still answering the question.',
     source: 'Uwambaje et al., Rwanda J. Medicine & Health Sciences, 2025; WHO CSE fact sheet (11 Mar 2026) — pending clinical review',
+    followUp: { en: 'What if I’ve already handled it badly before?', rw: 'Bite niba nari maze kubikora nabi mbere?' },
   },
   {
     id: 'kb-start-early',
@@ -221,6 +239,7 @@ export const KB: KbChunk[] = [
     title: 'When to start — earlier than most parents expect',
     text: 'Adolescents in the 2025 Rwandan study said conversations often came too late, sometimes only after a girl had already begun menstruating. Guidance for parents is consistent on this: some girls begin puberty at 8 and some boys by 9, so these talks may need to start earlier than expected, and they work best as an ongoing series of small conversations rather than one event. Starting early does not push a child towards sex — the WHO states plainly that good sexuality education does not increase sexual activity or encourage earlier sexual behaviour.',
     source: 'Uwambaje et al., 2025; Nemours KidsHealth, Talking to Your Child About Puberty; WHO CSE fact sheet (11 Mar 2026) — pending clinical review',
+    followUp: { en: 'Isn’t that too young to really understand?', rw: 'Ntabwo bakiri bato bo kubyumva?' },
   },
   {
     id: 'kb-dont-know',
@@ -233,6 +252,7 @@ export const KB: KbChunk[] = [
     title: 'When you don’t know the answer, or it feels awkward',
     text: 'Not knowing is normal and is not a failure. Saying "I don\'t know — let me find out" keeps a child\'s trust; guessing loses it, and for health questions a community health worker or local facility can give an accurate answer. If the topic itself feels uncomfortable, it can help to practise what you want to say beforehand, and to name the awkwardness out loud: many parents find that saying "this was never discussed with me either, but I would rather you heard it from me" turns embarrassment into something honest rather than something that ends the conversation.',
     source: 'Nemours KidsHealth, Talking to Your Child About Puberty; Uwambaje et al., 2025 — pending clinical review',
+    followUp: { en: 'Is it really okay to just say I don’t know?', rw: 'Ni byiza koko kuvuga ngo simbizi?' },
   },
   {
     id: 'kb-not-accusing',
@@ -245,6 +265,7 @@ export const KB: KbChunk[] = [
     title: 'A question is not a confession',
     text: 'One of the things adolescents in the 2025 study said silenced them fastest was a parent assuming that asking about sex meant they were already having it. If a question alarms you, it usually helps to answer it first — briefly and honestly — then ask what made them curious, without accusation, and make clear they can come back with more. Guidance for parents makes the same point from the other side: do not assume what a child already knows; ask them.',
     source: 'Uwambaje et al., Rwanda J. Medicine & Health Sciences, 2025; Nemours KidsHealth — pending clinical review',
+    followUp: { en: 'How do I stay calm if I’m actually worried?', rw: 'Nagumana nte umutuzo niba mfite impungenge nyazo?' },
   },
   {
     id: 'kb-fathers',
@@ -257,6 +278,7 @@ export const KB: KbChunk[] = [
     title: 'For fathers — being someone your child can approach',
     text: 'Adolescents in the 2025 Rwandan study described fathers as strict and intimidating, and said this made them much less likely to raise anything about their bodies or relationships; often those conversations happened only with mothers, if at all. That is what young people reported experiencing, not a statement about what fathers are — and it means small changes are noticeable. Being the one who asks about their day, reacting calmly the first time something awkward comes up, and being willing to say you find the topic difficult all matter. Adolescents in the same study said they valued parents sharing their own experience, describing it as making the conversation feel safe.',
     source: 'Uwambaje et al., Rwanda J. Medicine & Health Sciences, 2025 — pending clinical review',
+    followUp: { en: 'What can mothers do differently in this?', rw: 'Ni iki ababyeyi b’abagore bakora ku buryo butandukanye?' },
   },
 ];
 

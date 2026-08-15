@@ -154,8 +154,10 @@ export async function POST(req: Request) {
       kind: 'answer',
       answer: parsed.reply,
       starter: parsed.opener ? `${lang === 'rw' ? 'Intangiriro' : 'Opener'}: ${parsed.opener}` : undefined,
-      // Only cite a source when the answer was actually grounded in one.
+      // Only cite a source (and offer a follow-up) when the answer was
+      // actually grounded in one.
       source: chunks.length ? chunks[0]!.source : undefined,
+      followUp: chunks.length ? chunks[0]!.followUp[lang] : undefined,
     };
     return Response.json(reply);
   } catch (err) {

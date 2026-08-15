@@ -11,8 +11,8 @@
  * the point of the test: it catches exactly the gap that shipped before.
  */
 import { describe, it, expect } from 'vitest';
-import { retrieveKb } from './kb';
-import { demoReply } from './coach';
+import { retrieveKb, KB } from './kb';
+import { demoReply, nextSuggestions } from './coach';
 
 /** Every phrasing here must retrieve the given KB chunk id via BOTH paths. */
 const TOPIC_CASES: { question: string; expectId: string }[] = [
@@ -192,4 +192,48 @@ describe('suggestion chips always get a grounded answer, never a refusal', () =>
       expect(demoReply(q, 'rw').kind).toBe('answer');
     });
   }
+});
+
+describe('every KB entry has a real, non-empty follow-up question in both languages', () => {
+  for (const chunk of KB) {
+    it(chunk.id, () => {
+      expect(chunk.followUp.en.trim().length).toBeGreaterThan(0);
+      expect(chunk.followUp.rw.trim().length).toBeGreaterThan(0);
+    });
+  }
+});
+
+describe('a grounded demo answer carries its topic\'s follow-up question', () => {
+  it('EN', () => {
+    const reply = demoReply('What should I say about periods?', 'en');
+    const chunk = KB.find((c) => c.id === 'kb-puberty')!;
+    expect(reply.followUp).toBe(chunk.followUp.en);
+  });
+  it('RW', () => {
+    const reply = demoReply('Nsobanure nte kwemera?', 'rw');
+    const chunk = KB.find((c) => c.id === 'kb-consent')!;
+    expect(reply.followUp).toBe(chunk.followUp.rw);
+  });
+  it('a refusal never carries a follow-up', () => {
+    expect(demoReply('what is the capital of France', 'en').followUp).toBeUndefined();
+  });
+});
+
+describe('nextSuggestions()', () => {
+  const answer = { kind: 'answer' as const, answer: 'x', followUp: 'Follow-up question?' };
+  const chips = ['Chip A', 'Chip B', 'Chip C'];
+
+  it('puts the follow-up first, then fills with unused chips up to the max', () => {
+    expect(nextSuggestions(answer, [], chips, 3)).toEqual(['Follow-up question?', 'Chip A', 'Chip B']);
+  });
+  it('skips anything already asked, case-insensitively', () => {
+    expect(nextSuggestions(answer, ['chip a', 'FOLLOW-UP QUESTION?'], chips, 3)).toEqual(['Chip B', 'Chip C']);
+  });
+  it('returns nothing for a refusal or referral — there is nothing useful to suggest', () => {
+    expect(nextSuggestions({ kind: 'refusal', answer: 'x' }, [], chips)).toEqual([]);
+    expect(nextSuggestions({ kind: 'referral', answer: 'x' }, [], chips)).toEqual([]);
+  });
+  it('returns nothing when nothing is left to suggest', () => {
+    expect(nextSuggestions({ kind: 'answer', answer: 'x' }, ['Chip A', 'Chip B', 'Chip C'], chips)).toEqual([]);
+  });
 });
