@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useRef, useState, type FormEvent } from 'react';
-import { Send, ShieldCheck, LifeBuoy, Sparkles, BookText } from 'lucide-react';
-import { askCoach, type AgeBand, type CoachReply, type HistoryTurn, type Lang } from '../lib/coach';
+import { Send, ShieldCheck, LifeBuoy, Sparkles, BookText, MessageCirclePlus } from 'lucide-react';
+import { askCoach, nextSuggestions, type AgeBand, type CoachReply, type HistoryTurn, type Lang } from '../lib/coach';
 import { TypeOut } from './TypeOut';
 
 interface Msg {
@@ -15,7 +15,7 @@ interface Msg {
 const LABELS: Record<Lang, {
   title: string; subtitle: string; placeholder: string; ask: string;
   age: string; ageOpts: Record<AgeBand, string>; lang: string;
-  disclaimer: string; demo: string; suggestions: string; you: string; coach: string;
+  disclaimer: string; demo: string; suggestions: string; continue: string; you: string; coach: string;
   chips: string[];
 }> = {
   en: {
@@ -29,6 +29,7 @@ const LABELS: Record<Lang, {
     disclaimer: 'Not a diagnosis. The live coach answers only from a clinically & culturally reviewed knowledge base, and never stores your name or your child’s.',
     demo: 'Preview — sample grounded answers. The live coach connects to the approved knowledge base and routes any disclosure to real help.',
     suggestions: 'Try asking about',
+    continue: 'You could also ask',
     you: 'You',
     coach: 'Coach',
     chips: ['How do I talk to my teen?', 'What should I say about periods?', 'How do I explain consent?', 'A friend told my child a myth'],
@@ -44,6 +45,7 @@ const LABELS: Record<Lang, {
     disclaimer: 'Si isuzuma. Umujyanama nyawe asubiza gusa ashingiye ku bumenyi bwasuzumwe mu buvuzi no mu muco, kandi ntabika izina ryawe cyangwa iry’umwana wawe.',
     demo: 'Igerageza — ibisubizo by’urugero bishingiye ku nyandiko. Umujyanama nyawe yifashisha ubumenyi bwemejwe kandi akohereza ku bufasha nyabwo.',
     suggestions: 'Gerageza kubaza kuri',
+    continue: 'Ushobora no kubaza',
     you: 'Wowe',
     coach: 'Umujyanama',
     chips: ['Nganire nte n’umwana wanjye?', 'Mvuge iki ku mihango?', 'Nsobanure nte kwemera?', 'Inshuti yabwiye umwana ikinyoma'],
@@ -144,6 +146,20 @@ export function Coach() {
                   <div className="coach-source"><BookText size={12} aria-hidden /> {m.reply.source}</div>
                 ) : null}
               </div>
+              {!busy && m.id === lastCoachId ? (() => {
+                const asked = messages.filter((x) => x.role === 'user').map((x) => x.text ?? '');
+                const options = nextSuggestions(m.reply, asked, t.chips);
+                return options.length > 0 ? (
+                  <div className="coach-followups">
+                    <span className="coach-followups-label"><MessageCirclePlus size={12} aria-hidden /> {t.continue}</span>
+                    <div className="coach-chips">
+                      {options.map((c) => (
+                        <button key={c} type="button" className="coach-chip" onClick={() => void send(c)}>{c}</button>
+                      ))}
+                    </div>
+                  </div>
+                ) : null;
+              })() : null}
             </div>
           ),
         )}

@@ -28,6 +28,9 @@ export interface CoachReply {
   answer: string;
   starter?: string;
   source?: string;
+  /** A suggested next question, offered as a chip once this answer is shown
+   *  (grounded replies only — never on a refusal or referral). */
+  followUp?: string;
 }
 
 interface Entry {
@@ -410,7 +413,8 @@ export function demoReply(question: string, lang: Lang): CoachReply {
   const matches = retrieveTiered(q, 'all', DEMO_SPECIFIC, DEMO_GENERAL);
   if (matches.length > 0) {
     const entry = DEMO_KB.find((e) => e.id === matches[0]!.id);
-    if (entry) return entry[lang];
+    const chunk = KB.find((c) => c.id === matches[0]!.id);
+    if (entry) return { ...entry[lang], followUp: chunk?.followUp[lang] };
   }
   // Warm conversational handling so the demo doesn't feel robotic.
   if (THANKS.some((w) => q.includes(w))) return CONVO_THANKS[lang];
@@ -421,6 +425,38 @@ export function demoReply(question: string, lang: Lang): CoachReply {
 export interface AskResult {
   reply: CoachReply;
   demo: boolean;
+}
+
+/**
+ * Suggestion chips to offer after a coach answer: the topic's own follow-up
+ * question first, then enough of the general starter chips to fill up to
+ * `max`, skipping anything already asked in this conversation (case-
+ * insensitive) so the same suggestion never repeats. Only ever called for a
+ * grounded 'answer' — a refusal or referral has nothing useful to suggest.
+ */
+export function nextSuggestions(
+  reply: CoachReply | undefined,
+  askedTexts: string[],
+  chips: string[],
+  max = 3,
+): string[] {
+  if (!reply || reply.kind !== 'answer') return [];
+  const asked = new Set(askedTexts.map((t) => t.trim().toLowerCase()));
+  const seen = new Set<string>();
+  const out: string[] = [];
+  const add = (text: string | undefined) => {
+    if (!text) return;
+    const key = text.trim().toLowerCase();
+    if (asked.has(key) || seen.has(key)) return;
+    seen.add(key);
+    out.push(text);
+  };
+  add(reply.followUp);
+  for (const c of chips) {
+    if (out.length >= max) break;
+    add(c);
+  }
+  return out.slice(0, max);
 }
 
 export interface HistoryTurn {

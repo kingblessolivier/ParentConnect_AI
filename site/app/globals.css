@@ -402,6 +402,10 @@ footer .brand { font-size: 13.5px; color: var(--text); }
 .coach-msg { display: flex; flex-direction: column; gap: 5px; max-width: 86%; }
 .coach-msg.user { align-self: flex-end; align-items: flex-end; }
 .coach-msg.coach { align-self: flex-start; }
+@media (prefers-reduced-motion: no-preference) {
+  .coach-msg { animation: coach-msg-in .38s cubic-bezier(.2,.7,.2,1) both; }
+  @keyframes coach-msg-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+}
 .coach-who {
   display: inline-flex; align-items: center; gap: 5px;
   font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted);
@@ -421,6 +425,20 @@ footer .brand { font-size: 13.5px; color: var(--text); }
 .coach-source {
   display: flex; align-items: center; gap: 6px; margin-top: 10px;
   font-size: 11.5px; color: var(--muted); font-style: italic;
+}
+
+/* Follow-up suggestions offered after an answer — visually lighter and
+   smaller than the initial "Try asking about" chips, so it reads as "here's
+   where this could go next" rather than repeating the opening prompt. */
+.coach-followups { margin-top: 8px; max-width: 100%; }
+.coach-followups-label {
+  display: inline-flex; align-items: center; gap: 5px; margin-bottom: 8px;
+  font-size: 11px; font-weight: 650; color: var(--muted);
+}
+.coach-followups-label svg { color: var(--teal); }
+.coach-followups .coach-chip { font-size: 12.5px; padding: 7px 13px; }
+@media (prefers-reduced-motion: no-preference) {
+  .coach-followups { animation: coach-msg-in .42s cubic-bezier(.2,.7,.2,1) .08s both; }
 }
 .coach-typing { display: inline-flex; gap: 4px; align-items: center; }
 .coach-typing span { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); opacity: 0.5; }

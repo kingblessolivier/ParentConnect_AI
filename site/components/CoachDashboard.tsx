@@ -4,9 +4,9 @@ import { useEffect, useRef, useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import {
   Send, ShieldCheck, LifeBuoy, BookText, Plus, Trash2, MessageSquare,
-  Menu, ArrowLeft, Sparkles,
+  Menu, ArrowLeft, Sparkles, MessageCirclePlus,
 } from 'lucide-react';
-import { askCoach, type AgeBand, type HistoryTurn, type Lang } from '../lib/coach';
+import { askCoach, nextSuggestions, type AgeBand, type HistoryTurn, type Lang } from '../lib/coach';
 import { TypeOut } from './TypeOut';
 import {
   loadSessions, saveSessions, newSession, titleFrom, upsert, type Session, type StoredMsg,
@@ -15,13 +15,14 @@ import {
 const LABELS: Record<Lang, {
   brand: string; back: string; newChat: string; recent: string; empty: string;
   placeholder: string; ask: string; age: string; you: string; coach: string;
-  suggestions: string; chips: string[]; disclaimer: string; demo: string;
+  suggestions: string; continue: string; chips: string[]; disclaimer: string; demo: string;
   clearAll: string; privacy: string; deleteChat: string; untitled: string; greeting: string;
 }> = {
   en: {
     brand: 'Coach workspace', back: 'Back to site', newChat: 'New chat', recent: 'Your chats',
     empty: 'No saved chats yet.', placeholder: 'Type your question…', ask: 'Ask',
     age: 'Child’s age', you: 'You', coach: 'Coach', suggestions: 'Try asking about',
+    continue: 'You could also ask',
     chips: ['How do I talk to my teen?', 'What should I say about periods?', 'How do I explain consent?', 'A friend told my child a myth'],
     disclaimer: 'Not a diagnosis. The live coach answers only from a reviewed knowledge base and never stores your name or your child’s.',
     demo: 'Preview — sample grounded answers. The live coach connects to the approved knowledge base and routes any disclosure to real help.',
@@ -33,6 +34,7 @@ const LABELS: Record<Lang, {
     brand: 'Ahakorerwa umujyanama', back: 'Subira ku rubuga', newChat: 'Ikiganiro gishya', recent: 'Ibiganiro byawe',
     empty: 'Nta biganiro byabitswe.', placeholder: 'Andika ikibazo cyawe…', ask: 'Baza',
     age: 'Imyaka y’umwana', you: 'Wowe', coach: 'Umujyanama', suggestions: 'Gerageza kubaza kuri',
+    continue: 'Ushobora no kubaza',
     chips: ['Nganire nte n’umwana wanjye?', 'Mvuge iki ku mihango?', 'Nsobanure nte kwemera?', 'Inshuti yabwiye umwana ikinyoma'],
     disclaimer: 'Si isuzuma. Umujyanama nyawe asubiza ashingiye ku bumenyi bwasuzumwe kandi ntabika izina ryawe cyangwa iry’umwana.',
     demo: 'Igerageza — ibisubizo by’urugero bishingiye ku nyandiko. Umujyanama nyawe yifashisha ubumenyi bwemejwe kandi akohereza ku bufasha nyabwo.',
@@ -236,6 +238,20 @@ export function CoachDashboard() {
                       {m.reply?.starter ? <div className="coach-starter">{m.reply.starter}</div> : null}
                       {m.reply?.source ? <div className="coach-source"><BookText size={12} aria-hidden /> {m.reply.source}</div> : null}
                     </div>
+                    {!busy && m.id === lastCoachId ? (() => {
+                      const asked = current.messages.filter((x) => x.role === 'user').map((x) => x.text ?? '');
+                      const options = nextSuggestions(m.reply, asked, t.chips);
+                      return options.length > 0 ? (
+                        <div className="coach-followups">
+                          <span className="coach-followups-label"><MessageCirclePlus size={12} aria-hidden /> {t.continue}</span>
+                          <div className="coach-chips">
+                            {options.map((c) => (
+                              <button key={c} type="button" className="coach-chip" onClick={() => void send(c)}>{c}</button>
+                            ))}
+                          </div>
+                        </div>
+                      ) : null;
+                    })() : null}
                   </div>
                 ),
               )}
