@@ -1,5 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk';
-import { KB, type KbChunk } from '../../../lib/kb';
+import { retrieveKb } from '../../../lib/kb';
+import { requiresRefusal } from '../../../lib/refusal';
+import { isCrisis } from '../../../lib/crisis';
 import type { AgeBand, CoachReply, Lang } from '../../../lib/coach';
 
 /**
@@ -22,13 +24,6 @@ export const runtime = 'nodejs';
 // claude-opus-5 for the highest quality).
 const MODEL = process.env.COACH_MODEL ?? 'claude-sonnet-5';
 
-const CRISIS = [
-  'suicide', 'kill myself', 'hurt myself', 'end my life', 'want to die',
-  'raped', 'rape', 'abused', 'abuse', 'beaten', 'beats me', 'hitting me', 'hit me',
-  'is pregnant', "i'm pregnant", 'im pregnant', 'she is pregnant', 'got pregnant',
-  'kwiyahura', 'gufatwa ku ngufu', 'gukubitwa', 'aratwite', 'ndatwite',
-];
-
 const REFERRAL: Record<Lang, CoachReply> = {
   en: {
     kind: 'referral',
@@ -43,37 +38,6 @@ const REFERRAL: Record<Lang, CoachReply> = {
     source: 'Umutekano wawe uza mbere.',
   },
 };
-
-/**
- * Deterministic refusal gate (NFR-21) — mirrors `ai/safety/refusal.py`.
- *
- * Diagnosis, prescribing and termination advice are refused *before* the model
- * is called, never left to it. This matters more since retrieval gained a
- * general fallback: a dosing question now always retrieves *something*, so
- * without this check the model would be the only thing standing between that
- * question and an answer. A pattern check is not clever, but it fails closed.
- */
-const REFUSE_PATTERNS: RegExp[] = [
-  // diagnosis
-  /\bdo i have\b/i,
-  /\bis (?:this|it) an? (?:std|sti|infection|disease)\b/i,
-  /\bwhat (?:disease|infection|illness)\b/i,
-  // prescribing / dosing
-  /\bhow (?:much|many) (?:mg|milligrams?|pills?|tablets?)\b/i,
-  /\bwhat (?:dose|dosage)\b/i,
-  /\bwhich (?:medicine|medication|drug|pills?|contracepti\w*) should\b/i,
-  /\b(?:dose|dosage) of\b/i,
-  /\bshould she take\b/i,
-  /\bprescribe\b/i,
-  // termination
-  /\babortion\b/i,
-  /\b(?:terminate|end) (?:the|my|her|a) pregnancy\b/i,
-  /\bgukuramo inda\b/i,
-];
-
-function requiresRefusal(text: string): boolean {
-  return REFUSE_PATTERNS.some((re) => re.test(text));
-}
 
 const REFUSAL: Record<Lang, CoachReply> = {
   en: {
@@ -91,52 +55,6 @@ const REFUSAL: Record<Lang, CoachReply> = {
 };
 
 interface HistoryTurn { role: 'user' | 'coach'; text: string }
-
-function isCrisis(text: string): boolean {
-  const t = text.toLowerCase();
-  return CRISIS.some((w) => t.includes(w));
-}
-
-/** Deterministic keyword retrieval. Swap for embeddings when the real KB lands. */
-/**
- * Chunks that answer a broad "how do I approach this at all?" question.
- *
- * Without this, the single most likely opening question a parent asks — "what
- * advice can I give my teenager?" — matched no topic keyword, scored zero, and
- * was refused. That refusal was never a safety win: it's general communication
- * guidance the corpus *does* cover, just not under any one topic word.
- */
-const GENERAL_CHUNK_IDS = ['kb-communication', 'kb-parent-role', 'kb-fear', 'kb-getting-help'];
-
-function generalChunks(): KbChunk[] {
-  return GENERAL_CHUNK_IDS.map((id) => KB.find((c) => c.id === id)).filter(
-    (c): c is KbChunk => c !== undefined,
-  );
-}
-
-function retrieve(question: string, ageBand: AgeBand): KbChunk[] {
-  const q = question.toLowerCase();
-  // Match on word boundaries as well as substrings, so "adolescent"/"teenager"
-  // and multi-word keys both land. Plain `includes` alone missed too much.
-  const words = new Set(q.split(/[^a-zÀ-ɏ’']+/).filter(Boolean));
-  const scored = KB.map((c) => {
-    let score = c.keywords.reduce((s, k) => {
-      if (k.includes(' ')) return q.includes(k) ? s + 1 : s;
-      return words.has(k) || q.includes(k) ? s + 1 : s;
-    }, 0);
-    if (score > 0 && (c.ageBands.includes('all') || c.ageBands.includes(ageBand))) score += 0.5;
-    return { c, score };
-  })
-    .filter((x) => x.score > 0)
-    .sort((a, b) => b.score - a.score);
-
-  // Nothing matched: fall back to the general guidance rather than refusing.
-  // This does NOT loosen grounding — the model is still told to answer only
-  // from what it is given and to refuse if these chunks don't cover the
-  // question, so a clinical question still gets a refusal, not a guess.
-  if (scored.length === 0) return generalChunks().slice(0, 3);
-  return scored.slice(0, 3).map((x) => x.c);
-}
 
 const AGE_LABEL: Record<AgeBand, string> = { '10_12': '10–12', '13_15': '13–15', '16_19': '16–19' };
 
@@ -169,7 +87,7 @@ export async function POST(req: Request) {
   }
 
   // 2. Retrieve approved sources for the latest question.
-  const chunks = retrieve(question, ageBand);
+  const chunks = retrieveKb(question, ageBand);
   const sourcesBlock = chunks.length
     ? chunks.map((c, i) => `[Source ${i + 1}] ${c.title}\n${c.text}\n(citation: ${c.source})`).join('\n\n')
     : '(No approved source matched this message.)';
