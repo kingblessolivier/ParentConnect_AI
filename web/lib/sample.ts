@@ -4,7 +4,7 @@
  * in the UI. NONE of this is real: synthetic ids, no identity of any kind.
  */
 
-import type { AdminUser, Dimension, IndicatorRow, Overview, RatingSummary, ReferralView, ReviewItem } from './types';
+import type { AdminUser, AuditEvent, DirectoryAdminView, Dimension, IndicatorRow, Overview, RatingSummary, ReferralView, ReviewItem } from './types';
 
 export const SAMPLE_OVERVIEW: Overview = {
   totalParents: 1284,
@@ -77,3 +77,25 @@ export const SAMPLE_FEEDBACK: (RatingSummary & { title: string })[] = [
   { itemId: 'c-srh-1619', title: 'Puberty & the body (16–19)', count: 141, average: 3.8, distribution: { 1: 9, 2: 18, 3: 34, 4: 40, 5: 40 } },
   { itemId: 'c-parenting-all', title: 'Positive parenting basics', count: 97, average: 4.6, distribution: { 1: 1, 2: 3, 3: 9, 4: 33, 5: 51 } },
 ];
+
+export const SAMPLE_AUDIT: AuditEvent[] = [
+  { id: 'a-9', actorId: 'u-9001', actorRole: 'admin', action: 'user.role_changed', entity: 'user', entityId: 'u-9004', at: iso(-2), metadata: { from: 'parent', to: 'chw' } },
+  { id: 'a-8', actorId: 'u-9002', actorRole: 'cpo', action: 'referral.transitioned', entity: 'referral', entityId: 'r-1039', at: iso(-6), metadata: { to: 'acknowledged' } },
+  { id: 'a-7', actorId: 'u-9003', actorRole: 'reviewer', action: 'content.transitioned', entity: 'content_version', entityId: 'v-2201', at: iso(-20), metadata: { to: 'cultural_review' } },
+  { id: 'a-6', actorId: 'system:retention', actorRole: 'admin', action: 'retention.applied', entity: 'retention', entityId: 'run-2026-08-12', at: iso(-24), metadata: { otp: '14' } },
+  { id: 'a-5', actorId: 'u-9001', actorRole: 'admin', action: 'referral_directory.updated', entity: 'referral_directory', entityId: 'd-3', at: iso(-30), metadata: { change: 'updated' } },
+  { id: 'a-4', actorId: 'u-9006', actorRole: 'parent', action: 'privacy.erased', entity: 'account', entityId: 'u-9006', at: iso(-48) },
+];
+
+export const SAMPLE_DIRECTORY: DirectoryAdminView = {
+  usingBaseline: false,
+  baseline: [
+    { name: 'Isange One Stop Centre', phone: '[VERIFY: per-district number]', type: 'one_stop_centre' },
+    { name: 'National Child Helpline', phone: '[VERIFY: national helpline]', type: 'child_helpline' },
+  ],
+  entries: [
+    { id: 'd-1', name: 'Isange One Stop Centre — Kacyiru', phone: '[VERIFY]', type: 'one_stop_centre', district: 'Gasabo', updatedAt: iso(-100) },
+    { id: 'd-2', name: 'National Child Helpline', phone: '[VERIFY]', type: 'child_helpline', updatedAt: iso(-100) },
+    { id: 'd-3', name: 'Musanze District Hospital', phone: '[VERIFY]', type: 'health_facility', district: 'Musanze', updatedAt: iso(-30) },
+  ],
+};

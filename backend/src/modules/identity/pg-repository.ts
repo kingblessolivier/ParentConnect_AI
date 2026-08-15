@@ -246,4 +246,11 @@ export class PgOtpRepository implements OtpRepository {
   async delete(phoneHash: string): Promise<void> {
     await this.db.query('DELETE FROM otps WHERE phone_hash = $1', [phoneHash]);
   }
+
+  async deleteExpired(nowMs: number): Promise<number> {
+    const r = await this.db.query('DELETE FROM otps WHERE expires_at_ms < $1 RETURNING phone_hash', [
+      nowMs,
+    ]);
+    return r.rows.length;
+  }
 }

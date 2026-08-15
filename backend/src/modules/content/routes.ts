@@ -7,6 +7,7 @@
 import type { FastifyInstance } from 'fastify';
 import type { AppConfig } from '../../config.js';
 import { AppError } from '../../lib/problem.js';
+import type { AuditService } from '../audit/service.js';
 import { authenticate, requireRole } from '../identity/auth.js';
 import { AGE_BANDS, LANGUAGES, type AgeBand, type Language, type Role } from '../identity/types.js';
 import {
@@ -23,6 +24,8 @@ import { CONTENT_TOPICS, type ContentTopic } from './types.js';
 export interface ContentOptions {
   config: AppConfig;
   contentRepo?: ContentRepository;
+  /** Records editorial decisions to the system-wide audit log (NFR-11). */
+  audit?: AuditService;
 }
 
 const AUTHOR_ROLES: readonly Role[] = ['reviewer', 'admin'];
@@ -124,6 +127,19 @@ export async function contentRoutes(app: FastifyInstance, opts: ContentOptions):
     const { to } = (request.body ?? {}) as { to?: unknown };
     if (!isContentStatus(to)) throw new AppError(400, 'Invalid input', 'to must be a content status');
     // The workflow enforces which roles may perform this specific transition.
-    return service.transition(id, to, { parentId: ctx.parentId, role: ctx.role });
+    const version = await service.transition(id, to, { parentId: ctx.parentId, role: ctx.role });
+    // Clinical/cultural sign-off must be attributable after the fact (NFR-11/23).
+    opts.audit?.recordSafely(
+      {
+        actorId: ctx.parentId,
+        actorRole: ctx.role,
+        action: 'content.transitioned',
+        entity: 'content_version',
+        entityId: id,
+        metadata: { to },
+      },
+      (err) => app.log.error({ err }, 'audit write failed: content.transitioned'),
+    );
+    return version;
   });
 }

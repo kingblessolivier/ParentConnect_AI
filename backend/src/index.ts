@@ -11,6 +11,7 @@ import { buildApp, type AppDeps } from './app.js';
 import { loadConfig } from './config.js';
 import { createPool } from './lib/db.js';
 import { runMigrations } from './lib/migrate.js';
+import { PgAuditRepository } from './modules/audit/pg-repository.js';
 import { PgContentRepository } from './modules/content/pg-repository.js';
 import { PgFeedbackRepository } from './modules/feedback/pg-repository.js';
 import {
@@ -21,6 +22,7 @@ import {
 import { LogGateway } from './modules/messaging/gateway.js';
 import { PgNudgeRepository } from './modules/nudges/pg-repository.js';
 import { PgReferralRepository } from './modules/safeguarding/referral-pg-repository.js';
+import { PgDirectoryRepository } from './modules/safeguarding/directory-pg-repository.js';
 import { PgAssessmentRepository } from './modules/me/pg-repository.js';
 import { PgSessionRepository } from './modules/sessions/pg-repository.js';
 
@@ -43,8 +45,12 @@ async function main(): Promise<void> {
     deps.nudges = { nudgeRepo: new PgNudgeRepository(pool), parentRepo, gateway: new LogGateway() };
     deps.sessions = { sessionRepo: new PgSessionRepository(pool) };
     deps.me = { assessmentRepo: new PgAssessmentRepository(pool), parentRepo };
-    deps.safeguarding = { referralRepo: new PgReferralRepository(pool) };
+    deps.safeguarding = {
+      referralRepo: new PgReferralRepository(pool),
+      directoryRepo: new PgDirectoryRepository(pool),
+    };
     deps.feedback = { feedbackRepo: new PgFeedbackRepository(pool) };
+    deps.audit = { auditRepo: new PgAuditRepository(pool) };
   }
 
   const app = await buildApp(config, deps);

@@ -1,5 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk';
-import { KB, type KbChunk } from '../../../lib/kb';
+import { retrieveKb } from '../../../lib/kb';
+import { requiresRefusal } from '../../../lib/refusal';
+import { isCrisis } from '../../../lib/crisis';
 import type { AgeBand, CoachReply, Lang } from '../../../lib/coach';
 
 /**
@@ -21,13 +23,6 @@ export const runtime = 'nodejs';
 // Override with COACH_MODEL (e.g. claude-haiku-4-5 for the cheapest pilot,
 // claude-opus-5 for the highest quality).
 const MODEL = process.env.COACH_MODEL ?? 'claude-sonnet-5';
-
-const CRISIS = [
-  'suicide', 'kill myself', 'hurt myself', 'end my life', 'want to die',
-  'raped', 'rape', 'abused', 'abuse', 'beaten', 'beats me', 'hitting me', 'hit me',
-  'is pregnant', "i'm pregnant", 'im pregnant', 'she is pregnant', 'got pregnant',
-  'kwiyahura', 'gufatwa ku ngufu', 'gukubitwa', 'aratwite', 'ndatwite',
-];
 
 const REFERRAL: Record<Lang, CoachReply> = {
   en: {
@@ -61,24 +56,6 @@ const REFUSAL: Record<Lang, CoachReply> = {
 
 interface HistoryTurn { role: 'user' | 'coach'; text: string }
 
-function isCrisis(text: string): boolean {
-  const t = text.toLowerCase();
-  return CRISIS.some((w) => t.includes(w));
-}
-
-/** Deterministic keyword retrieval. Swap for embeddings when the real KB lands. */
-function retrieve(question: string, ageBand: AgeBand): KbChunk[] {
-  const q = question.toLowerCase();
-  const scored = KB.map((c) => {
-    let score = c.keywords.reduce((s, k) => (q.includes(k) ? s + 1 : s), 0);
-    if (score > 0 && (c.ageBands.includes('all') || c.ageBands.includes(ageBand))) score += 0.5;
-    return { c, score };
-  })
-    .filter((x) => x.score > 0)
-    .sort((a, b) => b.score - a.score);
-  return scored.slice(0, 3).map((x) => x.c);
-}
-
 const AGE_LABEL: Record<AgeBand, string> = { '10_12': '10–12', '13_15': '13–15', '16_19': '16–19' };
 
 export async function POST(req: Request) {
@@ -100,13 +77,17 @@ export async function POST(req: Request) {
   // 1. Safeguarding — never runs through the model.
   if (isCrisis(question)) return Response.json(REFERRAL[lang]);
 
+  // 1b. Refusal policy (NFR-21) — diagnosis/prescribing/termination are refused
+  // deterministically, before any model call, not left to the model's judgement.
+  if (requiresRefusal(question)) return Response.json(REFUSAL[lang]);
+
   // No key configured → tell the client to use its safe demo.
   if (!process.env.ANTHROPIC_API_KEY) {
     return Response.json({ error: 'coach not configured' }, { status: 503 });
   }
 
   // 2. Retrieve approved sources for the latest question.
-  const chunks = retrieve(question, ageBand);
+  const chunks = retrieveKb(question, ageBand);
   const sourcesBlock = chunks.length
     ? chunks.map((c, i) => `[Source ${i + 1}] ${c.title}\n${c.text}\n(citation: ${c.source})`).join('\n\n')
     : '(No approved source matched this message.)';

@@ -22,6 +22,7 @@ import {
   type OtpRepository,
   type ParentRepository,
 } from './repository.js';
+import type { AuditService } from '../audit/service.js';
 import type { ParentProfile } from './types.js';
 import {
   validateConsentInput,
@@ -32,6 +33,8 @@ import {
 
 export interface IdentityOptions {
   config: AppConfig;
+  /** Records role changes to the system-wide audit log (NFR-11). */
+  audit?: AuditService;
   /** Overridable for tests / future Postgres wiring. */
   parentRepo?: ParentRepository;
   consentRepo?: ConsentRepository;
@@ -177,6 +180,18 @@ export async function identityRoutes(app: FastifyInstance, opts: IdentityOptions
     const target = await parentRepo.findById(id);
     if (!target) throw new AppError(404, 'Not Found');
     const updated = await parentRepo.update(id, { role });
+    // A role change is a privilege escalation — always audited (NFR-11).
+    opts.audit?.recordSafely(
+      {
+        actorId: ctx.parentId,
+        actorRole: ctx.role,
+        action: 'user.role_changed',
+        entity: 'user',
+        entityId: id,
+        metadata: { from: target.role, to: role },
+      },
+      (err) => app.log.error({ err }, 'audit write failed: user.role_changed'),
+    );
     return adminUserView(updated);
   });
 

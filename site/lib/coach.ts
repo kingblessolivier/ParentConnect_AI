@@ -14,6 +14,11 @@
  *    (Law No. 058/2021 data minimisation).
  */
 
+import { KB, GENERAL_CHUNK_IDS } from './kb';
+import { retrieveTiered } from './retrieval';
+import { requiresRefusal } from './refusal';
+import { isCrisis } from './crisis';
+
 export type Lang = 'en' | 'rw';
 export type AgeBand = '10_12' | '13_15' | '16_19';
 export type ReplyKind = 'answer' | 'refusal' | 'referral';
@@ -25,18 +30,11 @@ export interface CoachReply {
   source?: string;
 }
 
-/** Words that, if present, route to human help instead of an answer. In the
- *  live system this detection is done server-side and far more carefully; here
- *  it only powers the demo's referral panel. */
-const CRISIS = [
-  'suicide', 'kill myself', 'hurt myself', 'end my life', 'want to die',
-  'raped', 'rape', 'abused', 'abuse', 'beaten', 'beats me', 'hitting me',
-  'is pregnant', "i'm pregnant", 'im pregnant', 'she is pregnant', 'got pregnant',
-  'kwiyahura', 'gufatwa ku ngufu', 'gukubitwa', 'aratwite', 'ndatwite',
-];
-
 interface Entry {
-  match: string[];
+  /** Must match a lib/kb.ts chunk id — keywords are sourced from there so
+   *  this file and the real coach route can never drift apart on what a
+   *  question matches (see lib/retrieval.ts for why that happened once). */
+  id: string;
   en: CoachReply;
   rw: CoachReply;
 }
@@ -45,7 +43,7 @@ interface Entry {
 // source-cited style, NOT the real knowledge base.
 const DEMO_KB: Entry[] = [
   {
-    match: ['period', 'periods', 'menstrua', 'menstruation', 'imihango', 'ukwezi'],
+    id: 'kb-puberty',
     en: {
       kind: 'answer',
       answer:
@@ -62,7 +60,7 @@ const DEMO_KB: Entry[] = [
     },
   },
   {
-    match: ['consent', 'boundaries', 'boundary', 'no means', 'kwemera', 'imbibi'],
+    id: 'kb-consent',
     en: {
       kind: 'answer',
       answer:
@@ -79,7 +77,7 @@ const DEMO_KB: Entry[] = [
     },
   },
   {
-    match: ['how do i talk', 'start the conversation', 'how to talk', 'begin', 'nganire', 'kuvugana', 'kuganira'],
+    id: 'kb-communication',
     en: {
       kind: 'answer',
       answer:
@@ -96,7 +94,7 @@ const DEMO_KB: Entry[] = [
     },
   },
   {
-    match: ['myth', 'myths', 'true that', 'rumour', 'rumor', 'imigenzo', 'ibihuha'],
+    id: 'kb-myths',
     en: {
       kind: 'answer',
       answer:
@@ -113,7 +111,7 @@ const DEMO_KB: Entry[] = [
     },
   },
   {
-    match: ['relationship', 'relationships', 'dating', 'boyfriend', 'girlfriend', 'imibanire', 'urukundo'],
+    id: 'kb-relationships',
     en: {
       kind: 'answer',
       answer:
@@ -130,7 +128,7 @@ const DEMO_KB: Entry[] = [
     },
   },
   {
-    match: ['online', 'internet', 'social media', 'phone', 'whatsapp', 'tiktok', 'photo', 'stranger', 'murandasi', 'telefone'],
+    id: 'kb-online',
     en: {
       kind: 'answer',
       answer:
@@ -147,7 +145,7 @@ const DEMO_KB: Entry[] = [
     },
   },
   {
-    match: ['emotion', 'emotions', 'feeling', 'feelings', 'sad', 'angry', 'stress', 'worried', 'anxious', 'mood', 'amarangamutima', 'agahinda'],
+    id: 'kb-emotions',
     en: {
       kind: 'answer',
       answer:
@@ -164,7 +162,7 @@ const DEMO_KB: Entry[] = [
     },
   },
   {
-    match: ['say no', 'saying no', 'refuse', 'pressured', 'peer pressure', 'friends want', 'kwanga', 'guhatirwa'],
+    id: 'kb-saying-no',
     en: {
       kind: 'answer',
       answer:
@@ -181,7 +179,7 @@ const DEMO_KB: Entry[] = [
     },
   },
   {
-    match: ['confidence', 'self-esteem', 'self esteem', 'body image', 'ugly', 'compare', 'kwiyizera', 'agaciro'],
+    id: 'kb-self-esteem',
     en: {
       kind: 'answer',
       answer:
@@ -198,7 +196,7 @@ const DEMO_KB: Entry[] = [
     },
   },
   {
-    match: ['who to ask', 'where to go', 'trusted adult', 'clinic', 'health worker', 'counsellor', 'get help', 'ubufasha', 'inama'],
+    id: 'kb-getting-help',
     en: {
       kind: 'answer',
       answer:
@@ -214,7 +212,136 @@ const DEMO_KB: Entry[] = [
       source: 'Inkomoko yemejwe: Gushaka ubufasha bwizewe — isomo ryasuzumwe (urugero)',
     },
   },
+
+  // ---------------------------------------------------------------------------
+  // Mirrors the 6 research-drafted entries added to lib/kb.ts this session
+  // (provenance: WHO CSE fact sheet; Uwambaje et al. 2025 — see kb.ts). These
+  // cover the questions parents actually open with, which the original
+  // topic-keyed entries above missed entirely in this demo path.
+  // ---------------------------------------------------------------------------
+  {
+    id: 'kb-parent-role',
+    en: {
+      kind: 'answer',
+      answer:
+        'You don’t need to have every answer — the most powerful thing you give your child is being someone safe to come to. Talk in short, ordinary moments rather than one big formal “talk”, and answer the question they actually asked.',
+      starter: 'Opener: “I want you to always feel you can ask me anything — even if I don’t know the answer right away, we can find out together.”',
+      source: 'Approved source: Being the person they can come to — reviewed lesson (illustrative)',
+    },
+    rw: {
+      kind: 'answer',
+      answer:
+        'Ntugomba kugira ibisubizo byose — ikintu gikomeye kurusha ibindi wafasha umwana wawe ni ukuba umuntu yizera kwegera. Vuganira na we mu bihe bisanzwe bigufi aho kugira “ikiganiro” kimwe kinini, kandi umusubize ikibazo nyacyo yabajije.',
+      starter: 'Intangiriro: “Nshaka ko wumva ushobora kumbaza ikintu icyo ari cyo cyose — n’iyo ntamenye igisubizo ubu, tuzagishakira hamwe.”',
+      source: 'Inkomoko yemejwe: Kuba umuntu umwana yizera kwegera — isomo ryasuzumwe (urugero)',
+    },
+  },
+  {
+    id: 'kb-fear',
+    en: {
+      kind: 'answer',
+      answer:
+        'Warnings alone — dangers, diseases, “don’t” — tend to make a teen stop asking questions, not stop taking risks; they just take their questions elsewhere. Stating your values and still answering the question works better than a lecture.',
+      starter: 'Opener: “I’m not here to scare you or catch you out — I’d rather you ask me anything than find an answer somewhere less safe.”',
+      source: 'Approved source: Why warnings alone tend not to work — reviewed lesson (illustrative)',
+    },
+    rw: {
+      kind: 'answer',
+      answer:
+        'Kuburira gusa — akaga, indwara, “ntugakore” — akenshi bituma umwana ahagarika kubaza ibibazo, aho guhagarika kwifuza kugerageza; ahubwo asanga ibisubizo ahandi. Kubwira umwana agaciro wemera ukanamusubiza ikibazo cye biruta guhanura gusa.',
+      starter: 'Intangiriro: “Sinaje kugutera ubwoba cyangwa kukugenza — nifuza ko umbaza ikintu icyo ari cyo cyose aho gushaka igisubizo ahandi hatari umutekano.”',
+      source: 'Inkomoko yemejwe: Impamvu kuburira gusa bidahagije — isomo ryasuzumwe (urugero)',
+    },
+  },
+  {
+    id: 'kb-start-early',
+    en: {
+      kind: 'answer',
+      answer:
+        'These conversations can start earlier than most parents expect — some girls begin puberty around 8 and some boys around 9. Starting early doesn’t push a child towards anything; it works best as an ongoing series of small talks, not one event.',
+      starter: 'Opener: “There’s no such thing as too early with me — you can ask about your body or growing up whenever it’s on your mind.”',
+      source: 'Approved source: When to start — reviewed lesson (illustrative)',
+    },
+    rw: {
+      kind: 'answer',
+      answer:
+        'Ibiganiro nk’ibi bishobora gutangira hakiri kare kurusha uko abenshi babyibwira — abakobwa bamwe batangira ubukure bafite imyaka 8, abahungu bamwe bakaba bafite 9. Gutangira kare ntibisunika umwana ku kintu icyo ari cyo cyose; birushaho gukora neza iyo biba ibiganiro bito bikomeza, atari igikorwa kimwe.',
+      starter: 'Intangiriro: “Nta “hakiri kare cyane” hariho kuri njye — ushobora kumbaza ku mubiri wawe cyangwa ku bukure igihe cyose ubyibwira.”',
+      source: 'Inkomoko yemejwe: Igihe cyo gutangira — isomo ryasuzumwe (urugero)',
+    },
+  },
+  {
+    id: 'kb-dont-know',
+    en: {
+      kind: 'answer',
+      answer:
+        'Not knowing is normal, not a failure. Saying “I don’t know — let me find out” keeps your child’s trust; guessing loses it. If the topic feels awkward, naming that out loud — “this wasn’t discussed with me either, but I’d rather you heard it from me” — can turn embarrassment into something honest.',
+      starter: 'Opener: “I don’t know everything, and this feels a little new for me too — but I’d rather figure it out with you than leave you without an answer.”',
+      source: 'Approved source: When you don’t know the answer — reviewed lesson (illustrative)',
+    },
+    rw: {
+      kind: 'answer',
+      answer:
+        'Kutamenya ni ibisanzwe, ntabwo ari ikinyoma. Kuvuga ngo “simbizi — reka mbibaze” bigumana icyizere cy’umwana wawe; kwivugira ibitari byo bikibitakaza. Niba ikibazo gitera isoni, kubivuga uko biri — “na njye ntabwo nabimbwiwe, ariko nifuza ko unyumva” — bishobora guhindura isoni kuba ukuri.',
+      starter: 'Intangiriro: “Simbizi byose, kandi na njye biransa nk’ibishya — ariko nifuza kubishakira hamwe naho kukureka udafite igisubizo.”',
+      source: 'Inkomoko yemejwe: Igihe utazi igisubizo — isomo ryasuzumwe (urugero)',
+    },
+  },
+  {
+    id: 'kb-not-accusing',
+    en: {
+      kind: 'answer',
+      answer:
+        'A question is not a confession. If something your child asks alarms you, answer it first — briefly and honestly — then ask what made them curious, without accusing them of already doing it. Assuming they’re “already active” is one of the fastest ways to make a teen stop asking altogether.',
+      starter: 'Opener: “Thank you for asking me that — you’re not in trouble. What made you think about it?”',
+      source: 'Approved source: A question is not a confession — reviewed lesson (illustrative)',
+    },
+    rw: {
+      kind: 'answer',
+      answer:
+        'Ikibazo si ukwemera ko wakoze ikintu. Niba ikibazo umwana wawe abajije kigutangaje, banza umusubize — mu magambo make kandi y’ukuri — hanyuma umubaze icyamuteye kubyibaza, utamucira urubanza ko ari “yarabikoze”. Kwibwira ko umwana “amaze gukora” ni bumwe mu buryo bwihuse bwo gutuma ahagarika kubaza rwose.',
+      starter: 'Intangiriro: “Urakoze kumbaza ibyo — nta kibazo ufite. Ni iki cyagutumye kubyibaza?”',
+      source: 'Inkomoko yemejwe: Ikibazo si ukwemera — isomo ryasuzumwe (urugero)',
+    },
+  },
+  {
+    id: 'kb-fathers',
+    en: {
+      kind: 'answer',
+      answer:
+        'Adolescents often describe fathers as strict or intimidating, which can make them far less likely to raise anything about their bodies or relationships. Small changes matter: asking about their day, staying calm the first time something awkward comes up, and being willing to say you find the topic difficult too.',
+      starter: 'Opener: “I know I can come across as strict, but you can always talk to me about anything — I want to hear it, even if it’s awkward.”',
+      source: 'Approved source: For fathers — reviewed lesson (illustrative)',
+    },
+    rw: {
+      kind: 'answer',
+      answer:
+        'Urubyiruko akenshi rubona ba se nk’abakaze cyangwa batinywa, bikaviramo kutabwira se ibirebana n’imibiri yabo cyangwa imibanire yabo. Impinduka nto zirafite akamaro: kubaza uko umunsi wagenze, kuguma mu mutuzo igihe ikintu gitangaje kivutse ku ncuro ya mbere, no kwemera kuvuga ko na wowe ubona ikibazo ari ikigoye.',
+      starter: 'Intangiriro: “Nzi ko nshobora kugaragara nk’ukaze, ariko ushobora kumbwira ikintu icyo ari cyo cyose igihe cyose — nshaka kubyumva, n’iyo byaba bigoye.”',
+      source: 'Inkomoko yemejwe: Kubw’ababyeyi b’abagabo — isomo ryasuzumwe (urugero)',
+    },
+  },
 ];
+
+/**
+ * Retrievable view of DEMO_KB, sourced from lib/kb.ts by id. Fails fast at
+ * module load if an id above doesn't exist in kb.ts, rather than silently
+ * dropping that entry from matching (exactly the kind of drift that let this
+ * demo fall behind the real coach route once already).
+ */
+const DEMO_RETRIEVABLE = DEMO_KB.map((entry) => {
+  const chunk = KB.find((c) => c.id === entry.id);
+  if (!chunk) {
+    throw new Error(`lib/coach.ts: DEMO_KB entry "${entry.id}" has no matching lib/kb.ts chunk`);
+  }
+  return { id: entry.id, keywords: chunk.keywords, ageBands: ['all'] };
+});
+
+// Same two-tier split as lib/kb.ts's retrieveKb: broad "how do I approach
+// this at all?" entries only compete once no specific topic matched, so they
+// can't drown out a specific match on incidental generic-word overlap.
+const DEMO_GENERAL = DEMO_RETRIEVABLE.filter((c) => GENERAL_CHUNK_IDS.includes(c.id));
+const DEMO_SPECIFIC = DEMO_RETRIEVABLE.filter((c) => !GENERAL_CHUNK_IDS.includes(c.id));
 
 const REFUSAL: Record<Lang, CoachReply> = {
   en: {
@@ -271,17 +398,20 @@ const CONVO_THANKS: Record<Lang, CoachReply> = {
   },
 };
 
-function isCrisis(text: string): boolean {
-  const t = text.toLowerCase();
-  return CRISIS.some((w) => t.includes(w));
-}
-
-function demoReply(question: string, lang: Lang): CoachReply {
+/** Exported for testing — this is the logic the no-key demo path runs. */
+export function demoReply(question: string, lang: Lang): CoachReply {
   if (isCrisis(question)) return REFERRAL[lang];
+  // NFR-21: this path has no model and no grounding check behind it — this
+  // gate is its only defence against a dosing/diagnosis/termination question
+  // matching some topic keyword below and getting a canned "answer".
+  if (requiresRefusal(question)) return REFUSAL[lang];
   const q = question.toLowerCase().trim();
   // Health topics take priority (grounded demo answers).
-  const hit = DEMO_KB.find((e) => e.match.some((m) => q.includes(m)));
-  if (hit) return hit[lang];
+  const matches = retrieveTiered(q, 'all', DEMO_SPECIFIC, DEMO_GENERAL);
+  if (matches.length > 0) {
+    const entry = DEMO_KB.find((e) => e.id === matches[0]!.id);
+    if (entry) return entry[lang];
+  }
   // Warm conversational handling so the demo doesn't feel robotic.
   if (THANKS.some((w) => q.includes(w))) return CONVO_THANKS[lang];
   if (q.length <= 30 && GREETING.some((w) => q.includes(w))) return CONVO_GREETING[lang];

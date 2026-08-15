@@ -1,0 +1,150 @@
+# Seed corpus — parent–adolescent communication (DRAFT, UNAPPROVED).
+#
+# Every entry is status: draft and CANNOT be ingested (kb/ingest.py, FR-20).
+# See ../README.md for what this is, what it is not, and the review checklist.
+#
+# Each entry carries `sources` naming where its claims come from. An entry with
+# no source is a bug, not an oversight — the loader rejects it.
+
+version: 0.1
+description: >
+  Research-drafted candidate content on how parents can talk with their
+  10-19-year-olds about growing up. Grounded in published behavioural research;
+  awaiting clinical and cultural review (Q4).
+
+entries:
+  - item_id: kb-comm-start
+    topic: communication
+    age_band: all
+    language: en
+    title: Starting the conversation before you think you need to
+    sources:
+      - "Uwambaje et al., Rwanda Journal of Medicine and Health Sciences, 2025 (PMC12188257)"
+      - "WHO, Comprehensive sexuality education fact sheet, 11 March 2026"
+    body: |
+      Many parents wait for a signal that it is time to talk. Adolescents in a
+      2025 Rwandan study said the opposite: conversations often came too late,
+      sometimes only after a girl had already started menstruating.
+
+      A more helpful moment is earlier, when a child first starts noticing
+      changes in their body or asking questions about them. Talking early does
+      not push a child towards sex. The World Health Organization is explicit
+      that good sexuality education "does not increase sexual activity or
+      encourage earlier sexual behaviour" — and that it can in fact delay
+      first sex.
+
+      You do not need one big conversation. Short, ordinary exchanges — walking
+      home, cooking together — are easier for both of you than a single formal
+      talk, and they leave the door open for the next question.
+
+  - item_id: kb-comm-fear
+    topic: communication
+    age_band: all
+    language: en
+    title: Why warnings alone tend not to work
+    sources:
+      - "Uwambaje et al., Rwanda Journal of Medicine and Health Sciences, 2025 (PMC12188257)"
+      - "WHO, Comprehensive sexuality education fact sheet, 11 March 2026"
+    body: |
+      When adolescents in Nyarugenge and Kamonyi were asked what their parents
+      told them about sex, the most common answer was: warnings. Dangers,
+      diseases, and "don't". Many said this made them stop asking questions
+      rather than stop taking risks.
+
+      Fear closes a conversation. Once a young person expects a lecture, they
+      take their questions somewhere else — usually to friends or the internet,
+      where the information may be wrong.
+
+      The WHO's evidence review reaches a related conclusion: programmes that
+      address both delaying sex *and* how to stay safe are more effective than
+      those teaching abstinence alone.
+
+      This does not mean abandoning your values. It means saying what you
+      believe *and* answering the question that was actually asked.
+
+  - item_id: kb-comm-questions
+    topic: communication
+    age_band: all
+    language: en
+    title: When your child asks something that worries you
+    sources:
+      - "Uwambaje et al., Rwanda Journal of Medicine and Health Sciences, 2025 (PMC12188257)"
+    body: |
+      A question is not a confession. Adolescents in the 2025 study said one of
+      the things that silenced them fastest was a parent assuming that asking
+      about sex meant they were already having it.
+
+      If your child asks something that alarms you, it usually helps to:
+
+      - answer the question first, briefly and honestly;
+      - ask what made them curious, without accusation;
+      - say plainly that they can come back with more questions.
+
+      If you do not know the answer, saying "I don't know, let me find out"
+      keeps their trust. Guessing does not.
+
+  - item_id: kb-comm-fathers
+    topic: communication
+    age_band: all
+    language: en
+    title: For fathers — being someone your child can approach
+    sources:
+      - "Uwambaje et al., Rwanda Journal of Medicine and Health Sciences, 2025 (PMC12188257)"
+    body: |
+      In the 2025 Rwandan study, adolescents described fathers as strict and
+      intimidating, and said this made them far less likely to raise anything
+      about relationships or their bodies. Several said these conversations
+      happened only with mothers, if at all.
+
+      This is not a statement about what fathers are; it is what young people
+      reported experiencing. It also means small changes are noticeable:
+
+      - being the one who asks how their day went, regularly;
+      - reacting calmly the first time something awkward comes up — that first
+        reaction is what they will remember when deciding whether to come back;
+      - being willing to say you find the topic difficult too.
+
+      Adolescents in the same study said they valued it when parents shared
+      their own experience, describing it as making the conversation feel safe.
+
+  - item_id: kb-comm-taboo
+    topic: communication
+    age_band: all
+    language: en
+    title: When the topic feels shameful to raise
+    sources:
+      - "Uwambaje et al., Rwanda Journal of Medicine and Health Sciences, 2025 (PMC12188257)"
+    body: |
+      Adolescents in the study named cultural taboo directly: discussing sex is
+      often seen as shameful, so they simply did not bring it up at home.
+      Parents frequently feel exactly the same discomfort from the other side.
+
+      It can help to name that out loud. Saying "this was never discussed with
+      me either, but I would rather you heard it from me than from someone who
+      does not care about you" does two things at once: it is honest, and it
+      makes clear that the awkwardness is not disapproval of them.
+
+      Discomfort is not a reason to stay silent. The alternative is not silence
+      — it is that someone else answers first.
+
+  - item_id: kb-comm-why-parents
+    topic: communication
+    age_band: all
+    language: en
+    title: Why this matters at home, not only at school
+    sources:
+      - "WHO, Comprehensive sexuality education fact sheet, 11 March 2026"
+      - "Uwambaje et al., Rwanda Journal of Medicine and Health Sciences, 2025 (PMC12188257)"
+    body: |
+      The WHO describes sexuality education as a lifelong process that "could
+      begin earlier in life, at home, with trusted caregivers", and notes that
+      consistent messages across home, school and community reinforce each other
+      and make the learning more effective.
+
+      School teaches facts. Home is where a young person learns whether it is
+      safe to ask a follow-up question — and that is what determines where they
+      go when something actually happens to them.
+
+      Research on parent-adolescent communication associates open conversation
+      at home with lower risk of adolescent pregnancy. You are not competing
+      with the school; you are the part the school cannot provide.

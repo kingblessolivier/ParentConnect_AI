@@ -92,3 +92,40 @@ export interface ReviewItem {
   culturalApprovedBy?: string;
   createdAt: string;
 }
+
+export type AuditAction =
+  | 'user.role_changed'
+  | 'content.transitioned'
+  | 'referral.transitioned'
+  | 'referral_directory.updated'
+  | 'access.denied'
+  | 'privacy.erased'
+  | 'retention.applied';
+
+export interface AuditEvent {
+  id: string;
+  actorId: string;
+  actorRole: Role;
+  action: AuditAction;
+  entity: string;
+  entityId: string;
+  at: string;
+  metadata?: Record<string, string>;
+}
+
+export type ReferralContactType = 'one_stop_centre' | 'child_helpline' | 'health_facility';
+
+export interface DirectoryEntry {
+  id: string;
+  name: string;
+  phone: string;
+  type: ReferralContactType;
+  district?: string;
+  updatedAt: string;
+}
+
+export interface DirectoryAdminView {
+  entries: DirectoryEntry[];
+  usingBaseline: boolean;
+  baseline: { name: string; phone: string; type: ReferralContactType; district?: string }[];
+}

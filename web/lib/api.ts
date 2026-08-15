@@ -55,6 +55,22 @@ export async function apiPatch<T>(path: string, body: unknown, token?: string): 
   return (await res.json()) as T;
 }
 
+export async function apiPut<T>(path: string, body: unknown, token?: string): Promise<T> {
+  const res = await fetch(`${API_BASE}${path}`, {
+    method: 'PUT',
+    headers: { 'content-type': 'application/json', ...authHeaders(token) },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new ApiError(res.status, `PUT ${path} → ${res.status}`);
+  return (await res.json()) as T;
+}
+
+export async function apiDelete<T>(path: string, token?: string): Promise<T> {
+  const res = await fetch(`${API_BASE}${path}`, { method: 'DELETE', headers: { ...authHeaders(token) } });
+  if (!res.ok) throw new ApiError(res.status, `DELETE ${path} → ${res.status}`);
+  return (await res.json()) as T;
+}
+
 /** For file-download endpoints (e.g. CSV export) that need the auth header. */
 export async function apiGetBlob(path: string, token?: string): Promise<Blob> {
   const res = await fetch(`${API_BASE}${path}`, {

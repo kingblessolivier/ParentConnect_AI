@@ -185,7 +185,7 @@ export function CoachDashboard() {
       <main className="cw-main">
         <header className="cw-top">
           <button className="cw-menu" onClick={() => setNavOpen((v) => !v)} aria-label="Open chats"><Menu size={18} /></button>
-          <div className="cw-brand"><span className="cw-brand-mark">PC</span> {t.brand}</div>
+          <div className="cw-brand"><span className="cw-brand-mark">PC</span> <span className="cw-brand-text">{t.brand}</span></div>
           <div className="cw-controls">
             <div className="coach-seg" role="group" aria-label="Language">
               <button className={current.lang === 'en' ? 'on' : ''} onClick={() => updateMeta({ lang: 'en' })} type="button">EN</button>
@@ -193,7 +193,11 @@ export function CoachDashboard() {
             </div>
             <label className="coach-age">
               <span>{t.age}</span>
-              <select value={current.ageBand} onChange={(e) => updateMeta({ ageBand: e.target.value as AgeBand })}>
+              <select
+                value={current.ageBand}
+                onChange={(e) => updateMeta({ ageBand: e.target.value as AgeBand })}
+                aria-label={t.age}
+              >
                 {AGE_OPTS.map((k) => <option key={k} value={k}>{AGE_LABEL[k]}</option>)}
               </select>
             </label>

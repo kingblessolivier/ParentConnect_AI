@@ -7,9 +7,13 @@
  */
 
 import Fastify, { type FastifyInstance } from 'fastify';
+import cors from '@fastify/cors';
 import type { AppConfig } from './config.js';
 import { buildProblemResponse } from './lib/error-handler.js';
 import { toProblem } from './lib/problem.js';
+import { auditRoutes } from './modules/audit/routes.js';
+import { InMemoryAuditRepository, type AuditRepository } from './modules/audit/repository.js';
+import { AuditService } from './modules/audit/service.js';
 import type { AiClient } from './modules/coach/ai-client.js';
 import { coachRoutes } from './modules/coach/routes.js';
 import { contentRoutes } from './modules/content/routes.js';
@@ -35,6 +39,10 @@ import {
   InMemoryReferralRepository,
   type ReferralRepository,
 } from './modules/safeguarding/referral-repository.js';
+import {
+  InMemoryDirectoryRepository,
+  type DirectoryRepository,
+} from './modules/safeguarding/directory-repository.js';
 import { safeguardingRoutes } from './modules/safeguarding/routes.js';
 import { sessionRoutes } from './modules/sessions/routes.js';
 import { InMemorySessionRepository, type SessionRepository } from './modules/sessions/repository.js';
@@ -73,10 +81,16 @@ export interface AppDeps {
   /** Inject persistent referral case storage. Defaults to in-memory. */
   safeguarding?: {
     referralRepo: ReferralRepository;
+    /** Editable directory overrides (FR-33). */
+    directoryRepo?: DirectoryRepository;
   };
   /** Inject persistent content-feedback storage. Defaults to in-memory. */
   feedback?: {
     feedbackRepo: FeedbackRepository;
+  };
+  /** Inject persistent audit storage (NFR-11). Defaults to in-memory. */
+  audit?: {
+    auditRepo: AuditRepository;
   };
 }
 
@@ -87,6 +101,16 @@ export async function buildApp(config: AppConfig, deps: AppDeps = {}): Promise<F
       // Never log PII/P3 (NFR-10/15). Extend as request shapes grow.
       redact: ['req.headers.authorization', 'req.body.phone', 'req.body.otp'],
     },
+  });
+
+  // The staff console is served from a different origin, so the browser needs
+  // an explicit allowlist. Never `*`: this API returns personal data, and a
+  // wildcard can't carry credentials anyway (NFR-10/13). An empty list (the
+  // production default until CORS_ORIGINS is set) blocks all browser origins.
+  await app.register(cors, {
+    origin: config.corsOrigins.length > 0 ? [...config.corsOrigins] : false,
+    credentials: true,
+    methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE'],
   });
 
   // Single problem+json error handler (mapping logic in lib/error-handler.ts).
@@ -118,15 +142,21 @@ export async function buildApp(config: AppConfig, deps: AppDeps = {}): Promise<F
   const feedbackRepo = deps.feedback?.feedbackRepo ?? new InMemoryFeedbackRepository();
   const assessmentRepo: AssessmentRepository = deps.me?.assessmentRepo ?? new InMemoryAssessmentRepository();
   const referralRepo: ReferralRepository = deps.safeguarding?.referralRepo ?? new InMemoryReferralRepository();
+  const directoryRepo: DirectoryRepository =
+    deps.safeguarding?.directoryRepo ?? new InMemoryDirectoryRepository();
   const sessionRepo: SessionRepository = deps.sessions?.sessionRepo ?? new InMemorySessionRepository();
   const nudgeRepo: NudgeRepository = deps.nudges?.nudgeRepo ?? new InMemoryNudgeRepository();
   const gateway = deps.nudges?.gateway;
+  const auditRepo: AuditRepository = deps.audit?.auditRepo ?? new InMemoryAuditRepository();
+  // One shared audit writer, injected into every module that performs an
+  // audited action (NFR-11). Modules never construct their own.
+  const audit = new AuditService(auditRepo);
 
   // Modules (ADR-0011). Each fails fast if its config is invalid.
-  await app.register(safeguardingRoutes, { config, referralRepo });
-  await app.register(identityRoutes, { config, parentRepo, consentRepo, otpRepo });
+  await app.register(safeguardingRoutes, { config, referralRepo, directoryRepo, audit });
+  await app.register(identityRoutes, { config, parentRepo, consentRepo, otpRepo, audit });
   await app.register(coachRoutes, { config, ...(deps.coach ?? {}) });
-  await app.register(contentRoutes, { config, contentRepo });
+  await app.register(contentRoutes, { config, contentRepo, audit });
   await app.register(nudgeRoutes, { config, nudgeRepo, parentRepo, ...(gateway ? { gateway } : {}) });
   await app.register(sessionRoutes, { config, sessionRepo });
   await app.register(meRoutes, { config, assessmentRepo, parentRepo });
@@ -139,7 +169,9 @@ export async function buildApp(config: AppConfig, deps: AppDeps = {}): Promise<F
     feedback: feedbackRepo,
     referrals: referralRepo,
     sessions: sessionRepo,
+    audit,
   });
+  await app.register(auditRoutes, { config, auditRepo });
 
   await app.ready();
   return app;

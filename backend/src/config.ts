@@ -7,7 +7,18 @@
  * fast at boot rather than leaking later.
  */
 
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
+
 export type NodeEnv = 'development' | 'test' | 'production';
+
+// Anchored to this file's own location, NOT process.cwd(). A relative default
+// ('infra/config/rw-pilot') silently resolves to the wrong place the moment
+// the process is launched from anywhere but the repo root — including the
+// documented `cd backend && npm run dev`, which is `backend/`. This module
+// lives at backend/src/config.ts (or backend/dist/config.js once built), so
+// two levels up is always the repo root regardless of CWD or build/run mode.
+const DEFAULT_CONFIG_DIR = join(dirname(fileURLToPath(import.meta.url)), '../../infra/config/rw-pilot');
 
 export interface AppConfig {
   readonly nodeEnv: NodeEnv;
@@ -35,6 +46,13 @@ export interface AppConfig {
   readonly refreshTtlSeconds: number;
   /** Child-protection referral SLA in hours: due_by = created_at + this (FR-23, D2). */
   readonly referralSlaHours: number;
+  /**
+   * Browser origins allowed to call this API (the staff console). Never a
+   * wildcard: this API serves personal data, and `*` cannot be combined with
+   * credentials anyway (NFR-10/13). Production must set CORS_ORIGINS
+   * explicitly; development defaults to the local console ports.
+   */
+  readonly corsOrigins: readonly string[];
 }
 
 const DEV_JWT_SECRET = 'dev-insecure-jwt-secret';
@@ -45,6 +63,17 @@ const DEV_PHONE_ENC_KEY = '00000000000000000000000000000000000000000000000000000
 function parseNodeEnv(value: string | undefined): NodeEnv {
   if (value === 'production' || value === 'test') return value;
   return 'development';
+}
+
+/** Comma-separated allowlist; dev falls back to the local console/site ports. */
+function parseOrigins(value: string | undefined, nodeEnv: NodeEnv): string[] {
+  const configured = (value ?? '')
+    .split(',')
+    .map((o) => o.trim())
+    .filter((o) => o !== '');
+  if (configured.length > 0) return configured;
+  if (nodeEnv === 'production') return [];
+  return ['http://localhost:3002', 'http://localhost:3003'];
 }
 
 function parseBool(value: string | undefined, fallback: boolean): boolean {
@@ -89,7 +118,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     nodeEnv,
     port,
     debug,
-    configDir: env.CONFIG_DIR ?? 'infra/config/rw-pilot',
+    configDir: env.CONFIG_DIR ?? DEFAULT_CONFIG_DIR,
     aiServiceUrl: env.AI_SERVICE_URL ?? 'http://localhost:8000',
     databaseUrl: env.DATABASE_URL,
     jwtSecret,
@@ -100,5 +129,6 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     accessTtlSeconds: Number(env.ACCESS_TTL_SECONDS ?? 900),
     refreshTtlSeconds: Number(env.REFRESH_TTL_SECONDS ?? 60 * 60 * 24 * 30),
     referralSlaHours: Number(env.REFERRAL_SLA_HOURS ?? 48),
+    corsOrigins: parseOrigins(env.CORS_ORIGINS, nodeEnv),
   };
 }

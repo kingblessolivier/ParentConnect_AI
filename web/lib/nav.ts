@@ -1,4 +1,4 @@
-import { LayoutDashboard, PieChart, LifeBuoy, ClipboardCheck, Star, Users, type LucideIcon } from 'lucide-react';
+import { LayoutDashboard, PieChart, LifeBuoy, ClipboardCheck, Star, Users, ScrollText, Phone, type LucideIcon } from 'lucide-react';
 
 export interface NavItem {
   href: string;
@@ -13,6 +13,8 @@ export const NAV: NavItem[] = [
   { href: '/content-review', label: 'Content review', icon: ClipboardCheck },
   { href: '/content-feedback', label: 'Content feedback', icon: Star },
   { href: '/users', label: 'Users & roles', icon: Users },
+  { href: '/referral-directory', label: 'Referral directory', icon: Phone },
+  { href: '/audit', label: 'Audit log', icon: ScrollText },
 ];
 
 export function navLabelFor(pathname: string): string {
