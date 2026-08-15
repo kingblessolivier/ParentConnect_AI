@@ -157,7 +157,7 @@ export async function POST(req: Request) {
       // Only cite a source (and offer a follow-up) when the answer was
       // actually grounded in one.
       source: chunks.length ? chunks[0]!.source : undefined,
-      followUp: chunks.length ? chunks[0]!.followUp[lang] : undefined,
+      followUps: chunks.length ? chunks[0]!.followUps[lang] : undefined,
     };
     return Response.json(reply);
   } catch (err) {

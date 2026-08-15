@@ -194,40 +194,44 @@ describe('suggestion chips always get a grounded answer, never a refusal', () =>
   }
 });
 
-describe('every KB entry has a real, non-empty follow-up question in both languages', () => {
+describe('every KB entry has two real, distinct, non-empty follow-up questions in both languages', () => {
   for (const chunk of KB) {
     it(chunk.id, () => {
-      expect(chunk.followUp.en.trim().length).toBeGreaterThan(0);
-      expect(chunk.followUp.rw.trim().length).toBeGreaterThan(0);
+      for (const lang of ['en', 'rw'] as const) {
+        const [a, b] = chunk.followUps[lang];
+        expect(a.trim().length).toBeGreaterThan(0);
+        expect(b.trim().length).toBeGreaterThan(0);
+        expect(a.trim().toLowerCase()).not.toBe(b.trim().toLowerCase());
+      }
     });
   }
 });
 
-describe('a grounded demo answer carries its topic\'s follow-up question', () => {
+describe('a grounded demo answer carries its topic\'s follow-up questions', () => {
   it('EN', () => {
     const reply = demoReply('What should I say about periods?', 'en');
     const chunk = KB.find((c) => c.id === 'kb-puberty')!;
-    expect(reply.followUp).toBe(chunk.followUp.en);
+    expect(reply.followUps).toEqual(chunk.followUps.en);
   });
   it('RW', () => {
     const reply = demoReply('Nsobanure nte kwemera?', 'rw');
     const chunk = KB.find((c) => c.id === 'kb-consent')!;
-    expect(reply.followUp).toBe(chunk.followUp.rw);
+    expect(reply.followUps).toEqual(chunk.followUps.rw);
   });
   it('a refusal never carries a follow-up', () => {
-    expect(demoReply('what is the capital of France', 'en').followUp).toBeUndefined();
+    expect(demoReply('what is the capital of France', 'en').followUps).toBeUndefined();
   });
 });
 
 describe('nextSuggestions()', () => {
-  const answer = { kind: 'answer' as const, answer: 'x', followUp: 'Follow-up question?' };
+  const answer = { kind: 'answer' as const, answer: 'x', followUps: ['Follow-up one?', 'Follow-up two?'] };
   const chips = ['Chip A', 'Chip B', 'Chip C'];
 
-  it('puts the follow-up first, then fills with unused chips up to the max', () => {
-    expect(nextSuggestions(answer, [], chips, 3)).toEqual(['Follow-up question?', 'Chip A', 'Chip B']);
+  it('puts both follow-ups first, then fills with unused chips up to the max', () => {
+    expect(nextSuggestions(answer, [], chips, 4)).toEqual(['Follow-up one?', 'Follow-up two?', 'Chip A', 'Chip B']);
   });
   it('skips anything already asked, case-insensitively', () => {
-    expect(nextSuggestions(answer, ['chip a', 'FOLLOW-UP QUESTION?'], chips, 3)).toEqual(['Chip B', 'Chip C']);
+    expect(nextSuggestions(answer, ['chip a', 'FOLLOW-UP ONE?'], chips, 4)).toEqual(['Follow-up two?', 'Chip B', 'Chip C']);
   });
   it('returns nothing for a refusal or referral — there is nothing useful to suggest', () => {
     expect(nextSuggestions({ kind: 'refusal', answer: 'x' }, [], chips)).toEqual([]);
